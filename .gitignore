@@ -1,0 +1,13 @@
+## Visual Studio & .NET Temp Files
+.vs/
+bin/
+obj/
+*.user
+
+## SQLite Temp Files
+*.db-wal
+*.db-shm
+
+## OS Junk
+Thumbs.db
+.DS_Store
