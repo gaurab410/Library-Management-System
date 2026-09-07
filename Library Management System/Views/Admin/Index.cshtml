@@ -1,0 +1,143 @@
+@model IEnumerable<LibraryManagementSystem.Models.LibraryItem>
+@{
+    ViewData["Title"] = "Admin - Inventory Management";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-shield-lock text-info me-2"></i>Library Inventory (Admin)</h2>
+        <p class="text-muted mb-0">Create, edit, view details, update statuses, or remove library items.</p>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-primary dropdown-toggle fw-bold" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-plus-circle me-1"></i> Add New Item
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item" asp-action="CreateBook"><i class="bi bi-book text-primary me-2"></i>Add Book Item</a></li>
+            <li><a class="dropdown-item" asp-action="CreateMusic"><i class="bi bi-music-note-beamed text-info me-2"></i>Add Music Item</a></li>
+            <li><a class="dropdown-item" asp-action="CreateToy"><i class="bi bi-controller text-warning me-2"></i>Add Toy / Game</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4 bg-white">
+    <div class="card-body p-3">
+        <form method="get" asp-action="Index">
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <input type="text" name="search" class="form-control" placeholder="Search name, code, description..." value="@ViewBag.Search">
+                </div>
+                <div class="col-md-3">
+                    <select name="typeFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="All" selected="@(ViewBag.TypeFilter == "All")">All Types</option>
+                        <option value="Book" selected="@(ViewBag.TypeFilter == "Book")">Books</option>
+                        <option value="Music" selected="@(ViewBag.TypeFilter == "Music")">Music</option>
+                        <option value="Toy" selected="@(ViewBag.TypeFilter == "Toy")">Toys</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="" selected="@(ViewBag.StatusFilter == null)">All Statuses</option>
+                        <option value="Available" selected="@(ViewBag.StatusFilter?.ToString() == "Available")">Available</option>
+                        <option value="Borrowed" selected="@(ViewBag.StatusFilter?.ToString() == "Borrowed")">Borrowed</option>
+                        <option value="Damaged" selected="@(ViewBag.StatusFilter?.ToString() == "Damaged")">Damaged</option>
+                        <option value="Destroy" selected="@(ViewBag.StatusFilter?.ToString() == "Destroy")">Destroy</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-search"></i></button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Code</th>
+                        <th>Type</th>
+                        <th>Item Name</th>
+                        <th>Specific Details</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No items found matching criteria.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><code>@item.LibraryCode</code></td>
+                                <td>
+                                    @if (item is LibraryManagementSystem.Models.BookItem)
+                                    {
+                                        <span class="badge bg-primary">Book</span>
+                                    }
+                                    else if (item is LibraryManagementSystem.Models.MusicItem)
+                                    {
+                                        <span class="badge bg-info text-dark">Music</span>
+                                    }
+                                    else if (item is LibraryManagementSystem.Models.ToyItem)
+                                    {
+                                        <span class="badge bg-warning text-dark">Toy</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="fw-bold">@item.Name</div>
+                                    <small class="text-muted">@item.Description</small>
+                                </td>
+                                <td>
+                                    <small>
+                                        @if (item is LibraryManagementSystem.Models.BookItem book)
+                                        {
+                                            <span><strong>Author:</strong> @book.Author | <strong>Genre:</strong> @book.Genre</span>
+                                        }
+                                        else if (item is LibraryManagementSystem.Models.MusicItem music)
+                                        {
+                                            <span><strong>Artist:</strong> @music.Artist (@music.ReleaseYear)</span>
+                                        }
+                                        else if (item is LibraryManagementSystem.Models.ToyItem toy)
+                                        {
+                                            <span><strong>Type:</strong> @toy.ToyType | <strong>Age:</strong> @toy.TargetAgeGroup</span>
+                                        }
+                                    </small>
+                                </td>
+                                <td>
+                                    <form asp-action="ChangeStatus" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <select name="newStatus" class="form-select form-select-sm d-inline-block w-auto border-0 fw-bold @(
+                                            item.Status == LibraryManagementSystem.Models.ItemStatus.Available ? "bg-success text-white" :
+                                            item.Status == LibraryManagementSystem.Models.ItemStatus.Borrowed ? "bg-primary text-white" :
+                                            item.Status == LibraryManagementSystem.Models.ItemStatus.Damaged ? "bg-warning text-dark" : "bg-danger text-white"
+                                        )" onchange="this.form.submit()">
+                                            <option value="Available" selected="@(item.Status == LibraryManagementSystem.Models.ItemStatus.Available)">Available</option>
+                                            <option value="Borrowed" selected="@(item.Status == LibraryManagementSystem.Models.ItemStatus.Borrowed)">Borrowed</option>
+                                            <option value="Damaged" selected="@(item.Status == LibraryManagementSystem.Models.ItemStatus.Damaged)">Damaged</option>
+                                            <option value="Destroy" selected="@(item.Status == LibraryManagementSystem.Models.ItemStatus.Destroy)">Destroy</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm me-1"><i class="bi bi-pencil"></i> Edit</a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-info btn-sm me-1"><i class="bi bi-eye"></i> Details</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Delete</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

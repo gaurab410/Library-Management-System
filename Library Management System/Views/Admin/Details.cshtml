@@ -1,0 +1,156 @@
+@model LibraryManagementSystem.Models.LibraryItem
+@{
+    ViewData["Title"] = "Item Details";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-info-circle text-info me-2"></i>Item Details</h4>
+                <span class="badge bg-warning text-dark fs-6">Code: @Model.LibraryCode</span>
+            </div>
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3 class="fw-bold text-dark mb-1">@Model.Name</h3>
+                        <p class="text-secondary lead fs-6">@Model.Description</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mb-3">
+                        <label class="d-block small text-muted text-uppercase fw-bold mb-1">Current Status</label>
+                        @switch (Model.Status)
+                        {
+                            case LibraryManagementSystem.Models.ItemStatus.Available:
+                                <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i>Available</span>
+                                break;
+                            case LibraryManagementSystem.Models.ItemStatus.Borrowed:
+                                <span class="badge bg-primary fs-6"><i class="bi bi-clock-history me-1"></i>Borrowed</span>
+                                break;
+                            case LibraryManagementSystem.Models.ItemStatus.Damaged:
+                                <span class="badge bg-warning text-dark fs-6"><i class="bi bi-exclamation-triangle me-1"></i>Damaged</span>
+                                break;
+                            case LibraryManagementSystem.Models.ItemStatus.Destroy:
+                                <span class="badge bg-danger fs-6"><i class="bi bi-x-circle me-1"></i>Destroyed</span>
+                                break;
+                        }
+                    </div>
+                </div>
+
+                <hr />
+
+                <h6 class="fw-bold text-uppercase text-secondary mb-3">Item Specifications</h6>
+
+                <dl class="row">
+                    <dt class="col-sm-4 text-muted">Item Type</dt>
+                    <dd class="col-sm-8"><span class="badge bg-secondary">@Model.ItemType</span></dd>
+
+                    <dt class="col-sm-4 text-muted">Library Code</dt>
+                    <dd class="col-sm-8"><code>@Model.LibraryCode</code></dd>
+
+                    @if (Model is LibraryManagementSystem.Models.BookItem book)
+                    {
+                        <dt class="col-sm-4 text-muted">Author</dt>
+                        <dd class="col-sm-8 fw-bold">@book.Author</dd>
+
+                        <dt class="col-sm-4 text-muted">Genre</dt>
+                        <dd class="col-sm-8">@book.Genre</dd>
+
+                        <dt class="col-sm-4 text-muted">ISBN</dt>
+                        <dd class="col-sm-8">@(book.ISBN ?? "N/A")</dd>
+                    }
+                    else if (Model is LibraryManagementSystem.Models.MusicItem music)
+                    {
+                        <dt class="col-sm-4 text-muted">Artist</dt>
+                        <dd class="col-sm-8 fw-bold">@music.Artist</dd>
+
+                        <dt class="col-sm-4 text-muted">Album</dt>
+                        <dd class="col-sm-8">@(music.Album ?? "N/A")</dd>
+
+                        <dt class="col-sm-4 text-muted">Release Year</dt>
+                        <dd class="col-sm-8">@music.ReleaseYear</dd>
+
+                        <dt class="col-sm-4 text-muted">Format</dt>
+                        <dd class="col-sm-8">@(music.Format ?? "N/A")</dd>
+                    }
+                    else if (Model is LibraryManagementSystem.Models.ToyItem toy)
+                    {
+                        <dt class="col-sm-4 text-muted">Toy / Game Type</dt>
+                        <dd class="col-sm-8 fw-bold">@(toy.ToyType ?? "N/A")</dd>
+
+                        <dt class="col-sm-4 text-muted">Target Age Group</dt>
+                        <dd class="col-sm-8">@(toy.TargetAgeGroup ?? "All Ages")</dd>
+
+                        <dt class="col-sm-4 text-muted">Manufacturer</dt>
+                        <dd class="col-sm-8">@(toy.Manufacturer ?? "N/A")</dd>
+                    }
+
+                    <dt class="col-sm-4 text-muted">Date Registered</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("MMMM dd, yyyy")</dd>
+                </dl>
+
+                <h6 class="fw-bold text-uppercase text-secondary mt-4 mb-3 border-top pt-3">Borrowing History Log</h6>
+
+                @if (!Model.BorrowTransactions.Any())
+                {
+                    <p class="text-muted small">No past borrowing history for this item.</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle small">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Borrower</th>
+                                    <th>Borrow Date</th>
+                                    <th>Due Date</th>
+                                    <th>Return Date</th>
+                                    <th>Fine</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in Model.BorrowTransactions.OrderByDescending(t => t.BorrowDate))
+                                {
+                                    <tr>
+                                        <td>@t.Borrower.FullName (<code>@t.Borrower.CardNumber</code>)</td>
+                                        <td>@t.BorrowDate.ToString("yyyy-MM-dd")</td>
+                                        <td>@t.DueDate.ToString("yyyy-MM-dd")</td>
+                                        <td>
+                                            @if (t.ReturnDate.HasValue)
+                                            {
+                                                <span class="text-success"><i class="bi bi-check-circle me-1"></i>@t.ReturnDate.Value.ToString("yyyy-MM-dd")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-primary">Active Loan</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (t.FineAmount > 0)
+                                            {
+                                                <span class="@(t.IsFinePaid ? "text-success" : "text-danger fw-bold")">
+                                                    $@t.FineAmount.ToString("F2") (@(t.IsFinePaid ? "Paid" : "Unpaid"))
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">$0.00</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Inventory</a>
+                    <div>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2"><i class="bi bi-pencil me-1"></i> Edit Item</a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Delete/Destroy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
