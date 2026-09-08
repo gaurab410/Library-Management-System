@@ -1,33 +1,57 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibraryManagementSystem.Models
 {
-    public class Borrower
+    public class BorrowTransaction
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Card Number is required.")]
-        [Display(Name = "Card Number")]
-        public string CardNumber { get; set; } = string.Empty;
+        [Required]
+        public int LibraryItemId { get; set; }
 
-        [Required(ErrorMessage = "Full Name is required.")]
-        [Display(Name = "Full Name")]
-        public string FullName { get; set; } = string.Empty;
+        [ForeignKey("LibraryItemId")]
+        public virtual LibraryItem LibraryItem { get; set; } = default!;
 
-        [EmailAddress(ErrorMessage = "Invalid email format.")]
-        public string? Email { get; set; }
+        [Required]
+        public int BorrowerId { get; set; }
 
-        public string? Phone { get; set; }
+        [ForeignKey("BorrowerId")]
+        public virtual Borrower Borrower { get; set; } = default!;
 
-        public string? Address { get; set; }
+        [Display(Name = "Borrow Date")]
+        public DateTime BorrowDate { get; set; } = DateTime.Now;
 
-        [Display(Name = "Active Member")]
-        public bool IsActive { get; set; } = true;
+        [Display(Name = "Due Date")]
+        public DateTime DueDate { get; set; }
 
-        [Display(Name = "Membership Date")]
-        public DateTime MembershipDate { get; set; } = DateTime.Now;
+        [Display(Name = "Return Date")]
+        public DateTime? ReturnDate { get; set; }
 
-        // Navigation property for borrowing history
-        public virtual ICollection<BorrowTransaction> BorrowTransactions { get; set; } = new List<BorrowTransaction>();
+        [Column(TypeName = "decimal(18,2)")]
+        [Display(Name = "Fine Amount ($)")]
+        public decimal FineAmount { get; set; } = 0.00m;
+
+        [Display(Name = "Fine Paid")]
+        public bool IsFinePaid { get; set; } = false;
+
+        public string? Notes { get; set; }
+
+        [NotMapped]
+        public bool IsOverdue => ReturnDate == null ? DateTime.Now > DueDate : ReturnDate > DueDate;
+
+        [NotMapped]
+        public int DaysLate
+        {
+            get
+            {
+                var endDate = ReturnDate ?? DateTime.Now;
+                if (endDate > DueDate)
+                {
+                    return (endDate.Date - DueDate.Date).Days;
+                }
+                return 0;
+            }
+        }
     }
 }
