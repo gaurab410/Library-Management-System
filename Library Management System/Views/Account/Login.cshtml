@@ -1,0 +1,80 @@
+@model LibraryManagementSystem.Models.LoginViewModel
+@{
+    ViewData["Title"] = "System Login";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow border-0 mt-3">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-shield-lock text-warning me-2"></i>Library Staff Login</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Login" method="post">
+                    <input type="hidden" asp-for="ReturnUrl" />
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label fw-bold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input asp-for="Email" class="form-control" placeholder="e.g. admin@library.com" required autofocus />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label fw-bold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key"></i></span>
+                            <input asp-for="Password" class="form-control" type="password" placeholder="Password" required />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4" />
+
+                <div class="bg-light p-3 rounded border">
+                    <h6 class="fw-bold mb-2 text-secondary"><i class="bi bi-info-circle text-primary me-1"></i> Demo Login Accounts:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless mb-0 small">
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th>Email</th>
+                                    <th>Password</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge bg-info text-dark">Admin</span></td>
+                                    <td><code>admin@library.com</code></td>
+                                    <td><code>Admin123!</code></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-success">Reception</span></td>
+                                    <td><code>reception@library.com</code></td>
+                                    <td><code>Reception123!</code></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-warning text-dark">Manager</span></td>
+                                    <td><code>manager@library.com</code></td>
+                                    <td><code>Manager123!</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,251 @@
+@model LibraryManagementSystem.Models.ManagerDashboardViewModel
+@{
+    ViewData["Title"] = "Manager Analytics Dashboard";
+    var recentTransactions = ViewBag.TransactionsList as List<LibraryManagementSystem.Models.BorrowTransaction> ?? new List<LibraryManagementSystem.Models.BorrowTransaction>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-line-fill text-warning me-2"></i>Manager Analytics Dashboard</h2>
+        <p class="text-muted mb-0">High-level statistics across borrowing operations, inventory health, and fine collections.</p>
+    </div>
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i> Print Report</button>
+</div>
+
+<!-- 1. BORROWING STATISTICS -->
+<h5 class="fw-bold text-uppercase text-secondary mb-3"><i class="bi bi-journal-check text-primary me-2"></i>1. Borrowing Statistics</h5>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 mb-4">
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 text-uppercase fw-bold small">Total Transactions</div>
+                        <h2 class="display-6 fw-bold mb-0">@Model.TotalTransactions</h2>
+                    </div>
+                    <i class="bi bi-receipt fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 text-uppercase fw-bold small">Active Loans</div>
+                        <h2 class="display-6 fw-bold mb-0">@Model.ActiveLoans</h2>
+                    </div>
+                    <i class="bi bi-box-arrow-up-right fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 text-uppercase fw-bold small">Returned Loans</div>
+                        <h2 class="display-6 fw-bold mb-0">@Model.ReturnedLoans</h2>
+                    </div>
+                    <i class="bi bi-box-arrow-in-left fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-white-50 text-uppercase fw-bold small">Overdue Loans</div>
+                        <h2 class="display-6 fw-bold mb-0">@Model.OverdueLoans</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. ITEM STATUS STATISTICS -->
+<h5 class="fw-bold text-uppercase text-secondary mb-3 mt-4"><i class="bi bi-boxes text-info me-2"></i>2. Item Status Statistics</h5>
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-7">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-dark text-white py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-pie-chart-fill text-warning me-2"></i>Status Breakdown (Total: @Model.TotalItems items)</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-bold mb-1">
+                        <span><i class="bi bi-circle-fill text-success me-1"></i> Available</span>
+                        <span>@Model.AvailableCount items (@(Model.TotalItems > 0 ? (Model.AvailableCount * 100 / Model.TotalItems) : 0)%)</span>
+                    </div>
+                    <div class="progress" style="height: 14px;">
+                        <div class="progress-bar bg-success" style="width: @(Model.TotalItems > 0 ? (Model.AvailableCount * 100 / Model.TotalItems) : 0)%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-bold mb-1">
+                        <span><i class="bi bi-circle-fill text-primary me-1"></i> Borrowed</span>
+                        <span>@Model.BorrowedCount items (@(Model.TotalItems > 0 ? (Model.BorrowedCount * 100 / Model.TotalItems) : 0)%)</span>
+                    </div>
+                    <div class="progress" style="height: 14px;">
+                        <div class="progress-bar bg-primary" style="width: @(Model.TotalItems > 0 ? (Model.BorrowedCount * 100 / Model.TotalItems) : 0)%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small fw-bold mb-1">
+                        <span><i class="bi bi-circle-fill text-warning me-1"></i> Damaged</span>
+                        <span>@Model.DamagedCount items (@(Model.TotalItems > 0 ? (Model.DamagedCount * 100 / Model.TotalItems) : 0)%)</span>
+                    </div>
+                    <div class="progress" style="height: 14px;">
+                        <div class="progress-bar bg-warning" style="width: @(Model.TotalItems > 0 ? (Model.DamagedCount * 100 / Model.TotalItems) : 0)%"></div>
+                    </div>
+                </div>
+
+                <div class="mb-0">
+                    <div class="d-flex justify-content-between small fw-bold mb-1">
+                        <span><i class="bi bi-circle-fill text-danger me-1"></i> Destroyed</span>
+                        <span>@Model.DestroyCount items (@(Model.TotalItems > 0 ? (Model.DestroyCount * 100 / Model.TotalItems) : 0)%)</span>
+                    </div>
+                    <div class="progress" style="height: 14px;">
+                        <div class="progress-bar bg-danger" style="width: @(Model.TotalItems > 0 ? (Model.DestroyCount * 100 / Model.TotalItems) : 0)%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-dark text-white py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-collection-fill text-info me-2"></i>Item Type Distribution</h6>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-around">
+                <div class="d-flex align-items-center p-2 rounded bg-light mb-2">
+                    <div class="bg-primary text-white rounded p-3 me-3"><i class="bi bi-book fs-3"></i></div>
+                    <div>
+                        <h5 class="fw-bold mb-0">@Model.BooksCount Books</h5>
+                        <small class="text-muted">Fiction, Tech, Science, Classics</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center p-2 rounded bg-light mb-2">
+                    <div class="bg-info text-white rounded p-3 me-3"><i class="bi bi-music-note-beamed fs-3"></i></div>
+                    <div>
+                        <h5 class="fw-bold mb-0">@Model.MusicCount Music Albums</h5>
+                        <small class="text-muted">Vinyls, CDs, Cassettes, Digital</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center p-2 rounded bg-light">
+                    <div class="bg-warning text-dark rounded p-3 me-3"><i class="bi bi-controller fs-3"></i></div>
+                    <div>
+                        <h5 class="fw-bold mb-0">@Model.ToysCount Toys & Games</h5>
+                        <small class="text-muted">Board games, Puzzles, LEGO sets</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. FINE STATISTICS -->
+<h5 class="fw-bold text-uppercase text-secondary mb-3 mt-4"><i class="bi bi-cash-coin text-success me-2"></i>3. Fine Statistics ($1.50/day late rate)</h5>
+<div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="card border-0 shadow-sm bg-white border-start border-4 border-primary">
+            <div class="card-body">
+                <div class="text-uppercase small fw-bold text-muted">Total Fines Accrued</div>
+                <h3 class="fw-bold text-primary mb-0">$@Model.TotalFines.ToString("F2")</h3>
+                <small class="text-muted">Overdue fees accrued</small>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm bg-white border-start border-4 border-success">
+            <div class="card-body">
+                <div class="text-uppercase small fw-bold text-muted">Total Paid Fines</div>
+                <h3 class="fw-bold text-success mb-0">$@Model.TotalPaidFines.ToString("F2")</h3>
+                <small class="text-muted">Successfully collected</small>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm bg-white border-start border-4 border-danger">
+            <div class="card-body">
+                <div class="text-uppercase small fw-bold text-muted">Total Outstanding Unpaid</div>
+                <h3 class="fw-bold text-danger mb-0">$@Model.TotalUnpaidFines.ToString("F2")</h3>
+                <small class="text-muted">Pending member payment</small>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card border-0 shadow-sm bg-white border-start border-4 border-warning">
+            <div class="card-body">
+                <div class="text-uppercase small fw-bold text-muted">Fined Transactions</div>
+                <h3 class="fw-bold text-warning text-dark mb-0">@Model.FinedTransactionsCount</h3>
+                <small class="text-muted">Total overdue events</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RECENT TRANSACTION ACTIVITY TABLE -->
+<div class="card shadow-sm border-0 mt-4">
+    <div class="card-header bg-dark text-white py-3">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2"></i>Recent Borrowing Transactions Summary</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped align-middle mb-0 small">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Borrower</th>
+                        <th>Borrow Date</th>
+                        <th>Due Date</th>
+                        <th>Return Date</th>
+                        <th>Fine Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in recentTransactions)
+                    {
+                        <tr>
+                            <td><strong>@t.LibraryItem.Name</strong> (<code>@t.LibraryItem.LibraryCode</code>)</td>
+                            <td>@t.Borrower.FullName (<code>@t.Borrower.CardNumber</code>)</td>
+                            <td>@t.BorrowDate.ToString("yyyy-MM-dd")</td>
+                            <td>@t.DueDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @if (t.ReturnDate.HasValue)
+                                {
+                                    <span class="text-success"><i class="bi bi-check-circle me-1"></i>@t.ReturnDate.Value.ToString("yyyy-MM-dd")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary">Active</span>
+                                }
+                            </td>
+                            <td>
+                                @if (t.FineAmount > 0)
+                                {
+                                    <span class="@(t.IsFinePaid ? "text-success" : "text-danger fw-bold")">
+                                        $@t.FineAmount.ToString("F2") (@(t.IsFinePaid ? "Paid" : "Unpaid"))
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">$0.00</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

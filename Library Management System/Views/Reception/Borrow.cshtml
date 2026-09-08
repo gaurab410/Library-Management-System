@@ -1,0 +1,67 @@
+@model LibraryManagementSystem.Models.BorrowItemViewModel
+@{
+    ViewData["Title"] = "Borrow Library Item";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-box-arrow-up-right me-2"></i>Borrow Library Item</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Borrow" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3">1. Item Selection</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-7">
+                            <label asp-for="LibraryItemId" class="form-label fw-bold"></label>
+                            <select asp-for="LibraryItemId" class="form-select" asp-items="ViewBag.AvailableItems">
+                                <option value="0">-- Select Available Item --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label asp-for="DirectLibraryCode" class="form-label fw-bold"></label>
+                            <input asp-for="DirectLibraryCode" class="form-control text-uppercase" placeholder="e.g. BK-1001" />
+                            <span asp-validation-for="DirectLibraryCode" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3">2. Borrower Selection</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-7">
+                            <label asp-for="BorrowerId" class="form-label fw-bold"></label>
+                            <select asp-for="BorrowerId" class="form-select" asp-items="ViewBag.ActiveBorrowers">
+                                <option value="0">-- Select Active Borrower --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label asp-for="DirectCardNumber" class="form-label fw-bold"></label>
+                            <input asp-for="DirectCardNumber" class="form-control text-uppercase" placeholder="e.g. BW-101" />
+                            <span asp-validation-for="DirectCardNumber" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3">3. Loan Parameters</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="DaysToBorrow" class="form-label fw-bold"></label>
+                            <input asp-for="DaysToBorrow" class="form-control" type="number" min="1" max="60" value="14" />
+                            <span class="form-text">Standard library loan period is 14 days.</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Notes" class="form-label fw-bold">Transaction Notes</label>
+                            <input asp-for="Notes" class="form-control" placeholder="Optional checkout notes..." />
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Reception</a>
+                        <button type="submit" class="btn btn-success px-4 fw-bold"><i class="bi bi-check-circle me-1"></i> Confirm Checkout</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

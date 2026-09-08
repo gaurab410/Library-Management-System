@@ -1,0 +1,96 @@
+@model LibraryManagementSystem.Models.ReturnItemViewModel
+@{
+    ViewData["Title"] = "Process Item Return";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-box-arrow-in-left me-2"></i>Process Item Return</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="bg-light p-3 rounded border mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="small text-muted text-uppercase fw-bold">Item Information</label>
+                            <h5 class="fw-bold mb-1">@Model.ItemName</h5>
+                            <p class="mb-0 text-secondary">Code: <code>@Model.LibraryCode</code></p>
+                        </div>
+                        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                            <label class="small text-muted text-uppercase fw-bold">Borrower Details</label>
+                            <h5 class="fw-bold mb-1">@Model.BorrowerName</h5>
+                            <p class="mb-0 text-secondary">Card: <code>@Model.CardNumber</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-4">
+                        <label class="small text-muted fw-bold">Borrow Date</label>
+                        <div class="fs-6 fw-bold">@Model.BorrowDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="small text-muted fw-bold">Due Date</label>
+                        <div class="fs-6 fw-bold">@Model.DueDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="small text-muted fw-bold">Return Date (Today)</label>
+                        <div class="fs-6 fw-bold text-success">@Model.ReturnDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+                </div>
+
+                @if (Model.DaysLate > 0)
+                {
+                    <div class="alert alert-danger p-3 mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill fs-2 me-3"></i>
+                            <div>
+                                <h5 class="alert-heading fw-bold mb-1">OVERDUE RETURN DETECTED!</h5>
+                                <div>Item is <strong>@Model.DaysLate day(s) late</strong> past the due date.</div>
+                                <div class="fs-5 fw-bold mt-1">Calculated Fine: @Model.DaysLate days × $1.50 = <span class="badge bg-danger">$@Model.FineAmount.ToString("F2")</span></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-success p-3 mb-4">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                        Item is returned on time! No late fine assessed. ($0.00)
+                    </div>
+                }
+
+                <form asp-action="Return" method="post">
+                    <input type="hidden" asp-for="TransactionId" />
+                    <input type="hidden" asp-for="FineAmount" />
+                    <input type="hidden" asp-for="DaysLate" />
+
+                    @if (Model.FineAmount > 0)
+                    {
+                        <div class="form-check form-switch bg-warning bg-opacity-10 p-3 rounded border border-warning mb-3">
+                            <input class="form-check-input ms-0 me-2" type="checkbox" asp-for="IsFinePaid" id="IsFinePaidCheck" />
+                            <label class="form-check-label fw-bold text-dark" for="IsFinePaidCheck">
+                                <i class="bi bi-cash-stack text-success me-1"></i> Borrower has paid the fine of $@Model.FineAmount.ToString("F2")
+                            </label>
+                        </div>
+                    }
+                    else
+                    {
+                        <input type="hidden" asp-for="IsFinePaid" value="true" />
+                    }
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label fw-bold">Return Notes / Item Condition</label>
+                        <input asp-for="Notes" class="form-control" placeholder="Optional notes regarding item condition upon return..." />
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold"><i class="bi bi-check-circle me-1"></i> Complete Return & Reset Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
