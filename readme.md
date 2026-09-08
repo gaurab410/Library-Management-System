@@ -2,6 +2,18 @@
 
 An ASP.NET Core MVC web application for managing library items, user authentication, and admin/manager operations.
 
+## Demo Login Credentials
+
+You can sign in using any of the pre-configured accounts:
+
+| Role | Email | Password | Access Level |
+| --- | --- | --- | --- |
+| **Admin** | `admin@library.com` | `Admin123!` | System Settings, User Management, Full Access |
+| **Receptionist** | `reception@library.com` | `Reception123!` | Member Registration, Book Checkouts & Returns, Fine Processing |
+| **Manager** | `manager@library.com` | `Manager123!` | Inventory Management, Reports, Overdue Monitoring |
+
+---
+
 ## Prerequisites
 
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download) or higher (Support for .NET 10)
