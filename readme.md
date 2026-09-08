@@ -1,0 +1,44 @@
+# Library Management System
+
+An ASP.NET Core MVC web application for managing library items, user authentication, and admin/manager operations.
+
+## Prerequisites
+
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download) or higher (Support for .NET 10)
+- [Git](https://git-scm.com/)
+
+---
+
+## How to Clone and Run
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/gaurab410/Library-Management-System.git
+cd Library-Management-System
+```
+
+### 2. Navigate to the Web App Folder
+```bash
+cd "Library Management System"
+```
+
+### 3. Run the Application
+```bash
+dotnet run
+```
+
+> **Note:** The database uses **SQLite** (`LibraryManagementSystem.db`) and is automatically created and seeded with default data when the application starts for the first time.
+
+### 4. Open in Browser
+Open your browser and navigate to the localhost URL shown in the terminal (e.g., `https://localhost:7143` or `http://localhost:5000`).
+
+---
+
+## Command Line Quick Reference
+
+| Action | Command |
+| --- | --- |
+| Clone Repo | `git clone https://github.com/gaurab410/Library-Management-System.git` |
+| Run from Root | `dotnet run --project "Library Management System"` |
+| Run from Project Dir | `cd "Library Management System"` then `dotnet run` |
+| Build Project | `dotnet build` |
