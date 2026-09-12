@@ -65,7 +65,7 @@ Open your browser and navigate to the localhost URL shown in the terminal (e.g.,
 | Build Project | `dotnet build` |
 
 
-# Library Management System - Project Report
+# Library Management System - Technical Report
 
 This report provides a comprehensive analysis of the Library Management System codebase, detailing the roles, folder structure, CRUD functions, and the purpose of key files and major functions.
 
