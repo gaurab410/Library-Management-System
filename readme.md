@@ -38,6 +38,15 @@ cd "Library Management System"
 ```bash
 dotnet run
 ```
+if problem arises this is the fix :
+```cd "E:\new\Library-Management-System\Library Management System"
+dotnet restore
+dotnet build
+```
+Then
+```bash
+dotnet run
+```
 
 > **Note:** The database uses **SQLite** (`LibraryManagementSystem.db`) and is automatically created and seeded with default data when the application starts for the first time.
 
