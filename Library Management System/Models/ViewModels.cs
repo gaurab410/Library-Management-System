@@ -35,6 +35,10 @@ namespace LibraryManagementSystem.Models
 
         public ItemStatus Status { get; set; } = ItemStatus.Available;
 
+        [Required(ErrorMessage = "Branch location is required.")]
+        [Display(Name = "Branch Location")]
+        public int BranchId { get; set; }
+
         // Book fields
         public string? Author { get; set; }
         public string? Genre { get; set; }

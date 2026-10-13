@@ -21,6 +21,15 @@ namespace LibraryManagementSystem.Models
         [Display(Name = "Status")]
         public ItemStatus Status { get; set; } = ItemStatus.Available;
 
+        [Required(ErrorMessage = "Branch is required.")]
+        [Display(Name = "Branch")]
+        public int BranchId { get; set; }
+
+        [ForeignKey("BranchId")]
+        [Display(Name = "Branch")]
+        [Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidateNever]
+        public virtual Branch Branch { get; set; } = default!;
+
         [Display(Name = "Created At")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
