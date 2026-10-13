@@ -44,7 +44,7 @@ namespace LibraryManagementSystem.Controllers
             return View(branches);
         }
 
-          // GET: Branch/Details/5
+        // GET: Branch/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -67,6 +67,92 @@ namespace LibraryManagementSystem.Controllers
                 CreatedAt = DateTime.Now
             };
             return View(branch);
+        }
+
+        // POST: Branch/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Branch branch)
+        {
+            if (await _context.Branches.AnyAsync(b => b.Name.ToLower() == branch.Name.Trim().ToLower()))
+            {
+                ModelState.AddModelError("Name", "A branch with this name already exists.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                branch.Name = branch.Name.Trim();
+                branch.Address = branch.Address.Trim();
+                branch.CreatedAt = DateTime.Now;
+
+                _context.Branches.Add(branch);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Branch '{branch.Name}' created successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(branch);
+        }
+
+        // GET: Branch/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var branch = await _context.Branches.FindAsync(id);
+            if (branch == null) return NotFound();
+
+            return View(branch);
+        }
+
+        // POST: Branch/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Branch branch)
+        {
+            if (id != branch.BranchId) return NotFound();
+
+            if (await _context.Branches.AnyAsync(b => b.BranchId != id && b.Name.ToLower() == branch.Name.Trim().ToLower()))
+            {
+                ModelState.AddModelError("Name", "Another branch with this name already exists.");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var existingBranch = await _context.Branches.FindAsync(id);
+                if (existingBranch == null) return NotFound();
+
+                existingBranch.Name = branch.Name.Trim();
+                existingBranch.Address = branch.Address.Trim();
+                existingBranch.Phone = branch.Phone;
+                existingBranch.Email = branch.Email;
+                existingBranch.OpeningHours = branch.OpeningHours;
+                existingBranch.IsActive = branch.IsActive;
+
+                _context.Update(existingBranch);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Branch '{existingBranch.Name}' updated successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(branch);
+        }
+
+        // POST: Branch/ToggleActive/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleActive(int id)
+        {
+            var branch = await _context.Branches.FindAsync(id);
+            if (branch == null) return NotFound();
+
+            branch.IsActive = !branch.IsActive;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Branch '{branch.Name}' status updated to {(branch.IsActive ? "Active" : "Inactive")}.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }
