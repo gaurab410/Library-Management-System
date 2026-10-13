@@ -17,6 +17,7 @@ namespace LibraryManagementSystem.Data
 
         public DbSet<Borrower> Borrowers { get; set; } = default!;
         public DbSet<BorrowTransaction> BorrowTransactions { get; set; } = default!;
+        public DbSet<Reservation> Reservations { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -50,6 +51,19 @@ namespace LibraryManagementSystem.Data
                 .HasOne(t => t.Borrower)
                 .WithMany(b => b.BorrowTransactions)
                 .HasForeignKey(t => t.BorrowerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure DeleteBehavior to Restrict deletion of items and borrowers with reservations
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.LibraryItem)
+                .WithMany()
+                .HasForeignKey(r => r.LibraryItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.Borrower)
+                .WithMany()
+                .HasForeignKey(r => r.BorrowerId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
