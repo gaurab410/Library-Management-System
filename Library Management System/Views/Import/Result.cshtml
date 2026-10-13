@@ -1,0 +1,75 @@
+@model LibraryManagementSystem.Models.ImportResultViewModel
+@{
+    ViewData["Title"] = "Import Execution Summary";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold">
+                    <i class="bi bi-clipboard-check-fill text-success me-2"></i>Import Summary Report
+                </h4>
+                <span class="badge bg-secondary">Processed Batch</span>
+            </div>
+            <div class="card-body p-4 text-center">
+                @if (Model.Imported > 0)
+                {
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success display-3"></i>
+                        <h3 class="fw-bold text-dark mt-2">Bulk Import Successful!</h3>
+                        <p class="text-muted">
+                            The catalog items have been added to the library database and set to <strong>Available</strong> status.
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <div class="mb-4">
+                        <i class="bi bi-exclamation-circle-fill text-warning display-3"></i>
+                        <h3 class="fw-bold text-dark mt-2">No Items Were Imported</h3>
+                        <p class="text-muted">
+                            All rows in the uploaded batch were either duplicates or contained validation errors.
+                        </p>
+                    </div>
+                }
+
+                <div class="row g-3 my-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 bg-light border border-success h-100">
+                            <span class="text-success small fw-bold text-uppercase d-block mb-1">Items Imported</span>
+                            <span class="display-6 fw-bold text-success">@Model.Imported</span>
+                            <span class="d-block small text-muted mt-1">Added to Inventory</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 bg-light border border-warning h-100">
+                            <span class="text-warning small fw-bold text-uppercase d-block mb-1">Duplicates Skipped</span>
+                            <span class="display-6 fw-bold text-warning">@Model.Skipped</span>
+                            <span class="d-block small text-muted mt-1">Existing LibraryCode</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 bg-light border border-danger h-100">
+                            <span class="text-danger small fw-bold text-uppercase d-block mb-1">Errors Encountered</span>
+                            <span class="display-6 fw-bold text-danger">@Model.Errors</span>
+                            <span class="d-block small text-muted mt-1">Invalid Format / Required</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 mt-4 pt-3 border-top flex-wrap">
+                    <a asp-controller="Admin" asp-action="Index" class="btn btn-primary fw-bold px-4">
+                        <i class="bi bi-boxes me-1"></i> View Admin Inventory
+                    </a>
+                    <a asp-action="Upload" class="btn btn-outline-success fw-bold px-4">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Import Another File
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-3">
+                        <i class="bi bi-house me-1"></i> Importer Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

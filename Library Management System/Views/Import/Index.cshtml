@@ -1,0 +1,207 @@
+@{
+    ViewData["Title"] = "CSV Bulk Importer";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i>Bulk CSV Importer
+        </h2>
+        <p class="text-muted mb-0">Import large catalogs of books, music items, and toys directly into the library inventory.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="DownloadTemplate" class="btn btn-outline-success fw-bold">
+            <i class="bi bi-download me-1"></i> Download Template
+        </a>
+        <a asp-action="Upload" class="btn btn-primary fw-bold">
+            <i class="bi bi-upload me-1"></i> Upload CSV File
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Step by Step Instructions -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-list-check me-2"></i>Import Workflow</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="d-flex mb-3">
+                    <div class="me-3">
+                        <span class="badge bg-primary rounded-circle p-2 fs-6">1</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Download Template</h6>
+                        <p class="text-muted small mb-0">Get the official CSV template with correct headers and sample items for all categories.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-3">
+                    <div class="me-3">
+                        <span class="badge bg-info text-dark rounded-circle p-2 fs-6">2</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Populate Your Data</h6>
+                        <p class="text-muted small mb-0">Add your Books, Music items, and Toys according to the schema rules shown on this page.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-3">
+                    <div class="me-3">
+                        <span class="badge bg-warning text-dark rounded-circle p-2 fs-6">3</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Upload &amp; Preview</h6>
+                        <p class="text-muted small mb-0">Upload your file to perform validation. Review valid rows, duplicates, and any validation errors.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex">
+                    <div class="me-3">
+                        <span class="badge bg-success rounded-circle p-2 fs-6">4</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Confirm Import</h6>
+                        <p class="text-muted small mb-0">Confirm valid rows to instantly commit them into the library database. Duplicates are skipped safely.</p>
+                    </div>
+                </div>
+
+                <hr class="my-4" />
+
+                <div class="d-grid gap-2">
+                    <a asp-action="Upload" class="btn btn-primary">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Go to File Upload
+                    </a>
+                    <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Return to Admin Console
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSV Format & Schema Details -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-table text-primary me-2"></i>Expected CSV Headers &amp; Field Specification</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Header Column</th>
+                                <th>Required?</th>
+                                <th>Applicable Item Types</th>
+                                <th>Rules &amp; Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Type</code></td>
+                                <td><span class="badge bg-danger">Required</span></td>
+                                <td><span class="badge bg-secondary">All</span></td>
+                                <td>Must be <strong>Book</strong>, <strong>Music</strong>, or <strong>Toy</strong> (case-insensitive).</td>
+                            </tr>
+                            <tr>
+                                <td><code>Name</code></td>
+                                <td><span class="badge bg-danger">Required</span></td>
+                                <td><span class="badge bg-secondary">All</span></td>
+                                <td>Title or name of the library item.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Description</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-secondary">All</span></td>
+                                <td>Brief item description, summary, or physical condition notes.</td>
+                            </tr>
+                            <tr>
+                                <td><code>LibraryCode</code></td>
+                                <td><span class="badge bg-danger">Required</span></td>
+                                <td><span class="badge bg-secondary">All</span></td>
+                                <td>Unique identification code (e.g. <code>BK-1001</code>). Duplicates in DB are skipped.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Author</code></td>
+                                <td><span class="badge bg-danger">Required</span></td>
+                                <td><span class="badge bg-primary">Book</span></td>
+                                <td>Author of the book.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Genre</code></td>
+                                <td><span class="badge bg-danger">Required</span></td>
+                                <td><span class="badge bg-primary">Book</span></td>
+                                <td>Genre category (e.g. Fiction, Science, Biography).</td>
+                            </tr>
+                            <tr>
+                                <td><code>ISBN</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-primary">Book</span></td>
+                                <td>Standard ISBN barcode / number (e.g. <code>978-0123456789</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>Artist</code></td>
+                                <td><span class="badge bg-danger">Required</span></td>
+                                <td><span class="badge bg-info text-dark">Music</span></td>
+                                <td>Performing artist, band, or composer.</td>
+                            </tr>
+                            <tr>
+                                <td><code>ReleaseYear</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-info text-dark">Music</span></td>
+                                <td>4-digit year between 1800 and 2100. Defaults to current year if omitted.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Album</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-info text-dark">Music</span></td>
+                                <td>Album title.</td>
+                            </tr>
+                            <tr>
+                                <td><code>Format</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-info text-dark">Music</span></td>
+                                <td>Audio format (e.g. Vinyl, CD, Digital, Cassette).</td>
+                            </tr>
+                            <tr>
+                                <td><code>ToyType</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-warning text-dark">Toy</span></td>
+                                <td>Category of toy (e.g. Board Game, Puzzle, Action Figure).</td>
+                            </tr>
+                            <tr>
+                                <td><code>TargetAgeGroup</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-warning text-dark">Toy</span></td>
+                                <td>Recommended age range (e.g. <code>3-5</code>, <code>8-12</code>, <code>All Ages</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>Manufacturer</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-warning text-dark">Toy</span></td>
+                                <td>Manufacturer or brand (e.g. LEGO, Hasbro, Mattel).</td>
+                            </tr>
+                            <tr>
+                                <td><code>BranchId</code></td>
+                                <td><span class="badge bg-light text-muted border">Optional</span></td>
+                                <td><span class="badge bg-secondary">All</span></td>
+                                <td>Numerical Branch ID for branch inventory assignment (e.g. <code>1</code>).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light py-2">
+                <span class="fw-bold small text-secondary"><i class="bi bi-file-text me-1"></i>CSV Raw Header String</span>
+            </div>
+            <div class="card-body p-3 bg-dark rounded-bottom">
+                <pre class="text-white font-monospace mb-0" style="white-space: pre-wrap; word-break: break-all;">Type,Name,Description,LibraryCode,Author,Genre,ISBN,Artist,ReleaseYear,Album,Format,ToyType,TargetAgeGroup,Manufacturer,BranchId</pre>
+            </div>
+        </div>
+    </div>
+</div>
