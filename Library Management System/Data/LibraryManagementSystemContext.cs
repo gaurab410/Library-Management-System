@@ -17,6 +17,8 @@ namespace LibraryManagementSystem.Data
 
         public DbSet<Borrower> Borrowers { get; set; } = default!;
         public DbSet<BorrowTransaction> BorrowTransactions { get; set; } = default!;
+        public DbSet<Branch> Branches { get; set; } = default!;
+        public DbSet<BranchTransfer> BranchTransfers { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -50,6 +52,46 @@ namespace LibraryManagementSystem.Data
                 .HasOne(t => t.Borrower)
                 .WithMany(b => b.BorrowTransactions)
                 .HasForeignKey(t => t.BorrowerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Branch -> LibraryItem (Restrict delete)
+            modelBuilder.Entity<LibraryItem>()
+                .HasOne(i => i.Branch)
+                .WithMany(b => b.Items)
+                .HasForeignKey(i => i.BranchId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Branch -> Borrower (HomeBranch)
+            modelBuilder.Entity<Borrower>()
+                .HasOne(b => b.HomeBranch)
+                .WithMany()
+                .HasForeignKey(b => b.HomeBranchId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure Branch -> BorrowTransaction (Restrict delete)
+            modelBuilder.Entity<BorrowTransaction>()
+                .HasOne(t => t.Branch)
+                .WithMany()
+                .HasForeignKey(t => t.BranchId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure BranchTransfer relationships (Restrict delete)
+            modelBuilder.Entity<BranchTransfer>()
+                .HasOne(t => t.LibraryItem)
+                .WithMany()
+                .HasForeignKey(t => t.LibraryItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<BranchTransfer>()
+                .HasOne(t => t.FromBranch)
+                .WithMany()
+                .HasForeignKey(t => t.FromBranchId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<BranchTransfer>()
+                .HasOne(t => t.ToBranch)
+                .WithMany()
+                .HasForeignKey(t => t.ToBranchId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
