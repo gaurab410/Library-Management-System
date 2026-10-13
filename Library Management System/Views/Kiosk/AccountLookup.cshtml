@@ -1,0 +1,377 @@
+@model LibraryManagementSystem.Models.Borrower
+@using LibraryManagementSystem.Models
+
+@{
+    Layout = null;
+    ViewData["Title"] = $"Account - {Model.FullName}";
+    var activeLoans = ViewBag.ActiveLoans as List<BorrowTransaction> ?? new List<BorrowTransaction>();
+    decimal totalFines = ViewBag.TotalUnpaidFines != null ? (decimal)ViewBag.TotalUnpaidFines : 0.00m;
+    decimal pendingFines = ViewBag.PendingOverdueFines != null ? (decimal)ViewBag.PendingOverdueFines : 0.00m;
+    var now = DateTime.Now;
+    int overdueCount = activeLoans.Count(l => now > l.DueDate);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>@ViewData["Title"] - Library Kiosk</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --kiosk-bg: #0b1120;
+            --kiosk-card: #1e293b;
+            --kiosk-border: #334155;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #8b5cf6;
+            --status-green: #10b981;
+            --status-orange: #f59e0b;
+            --status-red: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0b1120 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .kiosk-header {
+            padding: 1.5rem 2.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+        }
+
+        .kiosk-logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .kiosk-logo i {
+            color: var(--accent-purple);
+            font-size: 2.2rem;
+        }
+
+        .btn-exit-session {
+            font-size: 1.25rem;
+            font-weight: 700;
+            padding: 0.75rem 1.8rem;
+            border-radius: 16px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-exit-session:hover {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fff;
+            transform: scale(1.02);
+        }
+
+        .patron-card {
+            background: var(--kiosk-card);
+            border: 1px solid var(--kiosk-border);
+            border-radius: 28px;
+            padding: 2.25rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+        }
+
+        .stat-pill {
+            background: #0f172a;
+            border: 1px solid var(--kiosk-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-value {
+            font-size: 2.75rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .loan-item-card {
+            background: #0f172a;
+            border: 2px solid var(--kiosk-border);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .loan-item-card:hover {
+            border-color: rgba(6, 182, 212, 0.5);
+        }
+
+        .loan-item-overdue {
+            border-color: rgba(239, 68, 68, 0.6) !important;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), #0f172a 70%);
+        }
+
+        .due-badge {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            padding: 0.75rem 1.5rem;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .due-normal {
+            background: rgba(6, 182, 212, 0.15);
+            color: #22d3ee;
+            border: 1px solid rgba(6, 182, 212, 0.4);
+        }
+
+        .due-overdue {
+            background: rgba(239, 68, 68, 0.25);
+            color: #f87171;
+            border: 2px solid var(--status-red);
+            animation: pulse-danger 2s infinite;
+        }
+
+        @@keyframes pulse-danger {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        }
+
+        .fine-banner {
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .kiosk-footer {
+            margin-top: auto;
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="kiosk-header">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="kiosk-logo">
+                <i class="bi bi-person-vcard-fill"></i>
+                <span>PATRON ACCOUNT INQUIRY</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <a asp-controller="Kiosk" asp-action="Index" class="btn-exit-session">
+                    <i class="bi bi-box-arrow-left"></i> End Session
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container py-4 flex-grow-1">
+        <div class="patron-card mb-4">
+            <!-- Patron Profile Header -->
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 pb-3 border-bottom border-secondary mb-4">
+                <div>
+                    <span class="badge bg-purple px-3 py-2 fs-6 mb-2" style="background-color: var(--accent-purple);">
+                        <i class="bi bi-person-check-fill me-1"></i> Verified Patron
+                    </span>
+                    <h1 class="display-6 fw-bold text-white mb-1">@Model.FullName</h1>
+                    <div class="text-secondary fs-5 font-monospace">
+                        Card Number: <strong class="text-info">@Model.CardNumber</strong> &bull; Member Since: @Model.MembershipDate.ToString("yyyy")
+                    </div>
+                </div>
+
+                <div>
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success py-2 px-3 fs-5">
+                            <i class="bi bi-check-circle-fill me-1"></i> Account Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger py-2 px-3 fs-5">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i> Inactive / Blocked
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="row g-3 mb-4">
+                <!-- Stat 1: Active Loans -->
+                <div class="col-md-4">
+                    <div class="stat-pill">
+                        <div class="text-secondary text-uppercase fw-bold small mb-2">
+                            <i class="bi bi-book-half me-1"></i> Current Checked Out
+                        </div>
+                        <div class="stat-value text-white">@activeLoans.Count</div>
+                        <small class="text-secondary">Physical items on loan</small>
+                    </div>
+                </div>
+
+                <!-- Stat 2: Overdue Status -->
+                <div class="col-md-4">
+                    <div class="stat-pill">
+                        <div class="text-secondary text-uppercase fw-bold small mb-2">
+                            <i class="bi bi-exclamation-octagon-fill me-1"></i> Overdue Items
+                        </div>
+                        <div class="stat-value @(overdueCount > 0 ? "text-danger" : "text-success")">
+                            @overdueCount
+                        </div>
+                        <small class="@(overdueCount > 0 ? "text-danger fw-bold" : "text-secondary")">
+                            @(overdueCount > 0 ? "Action required! Return to reception." : "All loans within due date")
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Stat 3: Fines -->
+                <div class="col-md-4">
+                    <div class="stat-pill">
+                        <div class="text-secondary text-uppercase fw-bold small mb-2">
+                            <i class="bi bi-cash-coin me-1"></i> Outstanding Fines
+                        </div>
+                        <div class="stat-value @(totalFines > 0 ? "text-danger" : "text-success")">
+                            $@totalFines.ToString("F2")
+                        </div>
+                        <small class="text-secondary">
+                            @(totalFines > 0 ? $"Includes ${pendingFines:F2} pending overdue" : "Balance clear")
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fine Alert Warning if fines exist -->
+            @if (totalFines > 0)
+            {
+                <div class="fine-banner bg-danger bg-opacity-25 border border-danger border-opacity-50 text-white">
+                    <i class="bi bi-exclamation-triangle-fill text-danger fs-1 flex-shrink-0"></i>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-danger">Outstanding Fines Notice: $@totalFines.ToString("F2")</h4>
+                        <p class="mb-0 fs-6 text-light">
+                            You currently have accrued fines for overdue loans ($1.50/day late). Please visit the library reception desk to settle fines or renew eligible items.
+                        </p>
+                    </div>
+                </div>
+            }
+
+            <!-- Active Loans Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fs-2 fw-bold text-white mb-0">
+                    <i class="bi bi-collection-fill text-cyan me-2" style="color: var(--accent-cyan);"></i>
+                    Your Checked Out Items
+                </h3>
+                <span class="badge bg-secondary fs-6">@activeLoans.Count Active Item(s)</span>
+            </div>
+
+            <!-- Loans Card List -->
+            @if (!activeLoans.Any())
+            {
+                <div class="text-center py-5 rounded-4" style="background: #0f172a; border: 2px dashed var(--kiosk-border);">
+                    <i class="bi bi-journal-check text-success display-3 mb-3 d-block"></i>
+                    <h3 class="fw-bold text-white mb-2">No Items Currently Borrowed</h3>
+                    <p class="text-secondary fs-5 mb-0">You have no active loans checked out on this library card. Everything is clear!</p>
+                </div>
+            }
+            else
+            {
+                <div class="loans-list">
+                    @foreach (var loan in activeLoans)
+                    {
+                        var isLate = now > loan.DueDate;
+                        int daysLate = isLate ? (now.Date - loan.DueDate.Date).Days : 0;
+                        decimal pendingFine = daysLate * 1.50m;
+
+                        <div class="loan-item-card @(isLate ? "loan-item-overdue" : "")">
+                            <div class="row align-items-center g-3">
+                                <div class="col-lg-7">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="badge bg-secondary">@loan.LibraryItem.ItemType</span>
+                                        <span class="badge bg-dark font-monospace text-info border border-secondary">
+                                            @loan.LibraryItem.LibraryCode
+                                        </span>
+                                    </div>
+                                    <h2 class="fs-2 fw-bold text-white mb-2">@loan.LibraryItem.Name</h2>
+                                    <div class="text-secondary fs-5">
+                                        Borrowed on: <strong class="text-white">@loan.BorrowDate.ToString("MMM dd, yyyy")</strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-5 text-lg-end">
+                                    @if (isLate)
+                                    {
+                                        <div class="due-badge due-overdue mb-2">
+                                            <i class="bi bi-exclamation-diamond-fill"></i>
+                                            <span>OVERDUE: @loan.DueDate.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                        <div class="text-danger fw-bold fs-5">
+                                            <i class="bi bi-clock-history me-1"></i> @daysLate day(s) late &bull; Pending fine: $@pendingFine.ToString("F2")
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        var daysRemaining = (loan.DueDate.Date - now.Date).Days;
+                                        <div class="due-badge due-normal mb-2">
+                                            <i class="bi bi-calendar-check-fill"></i>
+                                            <span>Due: @loan.DueDate.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                        <div class="text-info fw-semibold fs-5">
+                                            <i class="bi bi-hourglass-split me-1"></i> @daysRemaining day(s) remaining
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Bottom Exit / Done Button -->
+            <div class="text-center mt-5 pt-3">
+                <a asp-controller="Kiosk" asp-action="Index" class="btn btn-purple px-5 py-3 fs-3 fw-bold rounded-4 shadow" style="background: linear-gradient(135deg, var(--accent-purple), #7c3aed); color: #fff;">
+                    <i class="bi bi-check-circle-fill me-2"></i> Done &bull; Return to Kiosk
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="kiosk-footer">
+        <div>Express Self-Service Station &bull; Library Management System &bull; Touch anywhere to interact</div>
+    </footer>
+</body>
+</html>
