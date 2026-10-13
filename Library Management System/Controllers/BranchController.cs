@@ -44,6 +44,29 @@ namespace LibraryManagementSystem.Controllers
             return View(branches);
         }
 
-        
+          // GET: Branch/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var branch = await _context.Branches
+                .Include(b => b.Items)
+                .FirstOrDefaultAsync(m => m.BranchId == id);
+
+            if (branch == null) return NotFound();
+
+            return View(branch);
+        }
+
+        // GET: Branch/Create
+        public IActionResult Create()
+        {
+            var branch = new Branch
+            {
+                IsActive = true,
+                CreatedAt = DateTime.Now
+            };
+            return View(branch);
+        }
     }
 }

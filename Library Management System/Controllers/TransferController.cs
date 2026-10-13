@@ -45,6 +45,39 @@ namespace LibraryManagementSystem.Controllers
             var transfers = await query.OrderByDescending(t => t.RequestedAt).ToListAsync();
             return View(transfers);
         }
+          // GET: Transfer/Create
+        public async Task<IActionResult> Create(int? libraryItemId)
+        {
+            var items = await _context.LibraryItems
+                .Include(i => i.Branch)
+                .Where(i => i.Status != ItemStatus.Destroy)
+                .OrderBy(i => i.Name)
+                .ToListAsync();
+
+            var branches = await _context.Branches
+                .Where(b => b.IsActive)
+                .OrderBy(b => b.Name)
+                .ToListAsync();
+
+            ViewBag.ItemsList = items;
+            ViewBag.BranchesList = new SelectList(branches, "BranchId", "Name");
+
+            var transfer = new BranchTransfer
+            {
+                LibraryItemId = libraryItemId ?? 0
+            };
+
+            if (libraryItemId.HasValue)
+            {
+                var selectedItem = items.FirstOrDefault(i => i.Id == libraryItemId.Value);
+                if (selectedItem != null)
+                {
+                    transfer.FromBranchId = selectedItem.BranchId;
+                }
+            }
+
+            return View(transfer);
+        }
 
     }
 }
