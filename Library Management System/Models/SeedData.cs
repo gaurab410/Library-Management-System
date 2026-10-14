@@ -13,11 +13,55 @@ namespace LibraryManagementSystem.Models
                 // Ensure database tables are created
                 context.Database.EnsureCreated();
 
+                // 0. Seed Branches (City Central Library, Westside Branch, Eastside Branch)
+                if (!context.Branches.Any())
+                {
+                    var branches = new List<Branch>
+                    {
+                        new Branch
+                        {
+                            Name = "City Central Library",
+                            Address = "100 Main Street, Metropolis",
+                            Phone = "555-0100",
+                            Email = "central@library.com",
+                            OpeningHours = "Mon-Fri: 8:00 AM - 8:00 PM, Sat: 9:00 AM - 5:00 PM",
+                            IsActive = true,
+                            CreatedAt = DateTime.Now.AddDays(-120)
+                        },
+                        new Branch
+                        {
+                            Name = "Westside Branch",
+                            Address = "450 West Boulevard, Metropolis",
+                            Phone = "555-0200",
+                            Email = "westside@library.com",
+                            OpeningHours = "Mon-Fri: 9:00 AM - 6:00 PM, Sat: 10:00 AM - 4:00 PM",
+                            IsActive = true,
+                            CreatedAt = DateTime.Now.AddDays(-120)
+                        },
+                        new Branch
+                        {
+                            Name = "Eastside Branch",
+                            Address = "780 East Avenue, Metropolis",
+                            Phone = "555-0300",
+                            Email = "eastside@library.com",
+                            OpeningHours = "Mon-Fri: 9:00 AM - 6:00 PM, Sun: 12:00 PM - 4:00 PM",
+                            IsActive = true,
+                            CreatedAt = DateTime.Now.AddDays(-120)
+                        }
+                    };
+                    context.Branches.AddRange(branches);
+                    context.SaveChanges();
+                }
+
                 // If items already exist, seed is complete
                 if (context.LibraryItems.Any())
                 {
                     return;
                 }
+
+                var centralBranch = context.Branches.First(b => b.Name == "City Central Library");
+                var westsideBranch = context.Branches.First(b => b.Name == "Westside Branch");
+                var eastsideBranch = context.Branches.First(b => b.Name == "Eastside Branch");
 
                 // 1. Seed Books (at least 5)
                 var books = new List<BookItem>
@@ -28,6 +72,7 @@ namespace LibraryManagementSystem.Models
                         Name = "The Great Gatsby",
                         Description = "A classic 1925 novel depicting Jazz Age glamour and tragedy.",
                         Status = ItemStatus.Available,
+                        BranchId = centralBranch.BranchId,
                         Author = "F. Scott Fitzgerald",
                         Genre = "Fiction",
                         ISBN = "978-0743273565",
@@ -39,6 +84,7 @@ namespace LibraryManagementSystem.Models
                         Name = "To Kill a Mockingbird",
                         Description = "Pulitzer Prize-winning masterpiece about racial injustice in the Deep South.",
                         Status = ItemStatus.Borrowed,
+                        BranchId = westsideBranch.BranchId,
                         Author = "Harper Lee",
                         Genre = "Classic",
                         ISBN = "978-0061120084",
@@ -50,6 +96,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Clean Code",
                         Description = "A handbook of agile software craftsmanship and best programming practices.",
                         Status = ItemStatus.Available,
+                        BranchId = centralBranch.BranchId,
                         Author = "Robert C. Martin",
                         Genre = "Technology",
                         ISBN = "978-0132350884",
@@ -61,6 +108,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Dune",
                         Description = "Epic science fiction novel set on the desert planet Arrakis.",
                         Status = ItemStatus.Damaged,
+                        BranchId = eastsideBranch.BranchId,
                         Author = "Frank Herbert",
                         Genre = "Sci-Fi",
                         ISBN = "978-0441172719",
@@ -72,6 +120,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Atomic Habits",
                         Description = "An easy & proven way to build good habits and break bad ones.",
                         Status = ItemStatus.Available,
+                        BranchId = westsideBranch.BranchId,
                         Author = "James Clear",
                         Genre = "Self-Help",
                         ISBN = "978-0735211292",
@@ -88,6 +137,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Abbey Road",
                         Description = "Iconic 11th studio album by the English rock band The Beatles.",
                         Status = ItemStatus.Available,
+                        BranchId = centralBranch.BranchId,
                         Artist = "The Beatles",
                         Album = "Abbey Road",
                         ReleaseYear = 1969,
@@ -100,6 +150,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Thriller",
                         Description = "Best-selling album of all time featuring Billie Jean & Beat It.",
                         Status = ItemStatus.Borrowed,
+                        BranchId = centralBranch.BranchId,
                         Artist = "Michael Jackson",
                         Album = "Thriller",
                         ReleaseYear = 1982,
@@ -112,6 +163,7 @@ namespace LibraryManagementSystem.Models
                         Name = "The Dark Side of the Moon",
                         Description = "Concept rock album exploring conflict, greed, and mental illness.",
                         Status = ItemStatus.Available,
+                        BranchId = westsideBranch.BranchId,
                         Artist = "Pink Floyd",
                         Album = "The Dark Side of the Moon",
                         ReleaseYear = 1973,
@@ -124,6 +176,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Kind of Blue",
                         Description = "Legendary studio album regarded as a jazz masterpiece.",
                         Status = ItemStatus.Destroy,
+                        BranchId = eastsideBranch.BranchId,
                         Artist = "Miles Davis",
                         Album = "Kind of Blue",
                         ReleaseYear = 1959,
@@ -141,6 +194,7 @@ namespace LibraryManagementSystem.Models
                         Name = "LEGO Classic Medium Creative Brick Box",
                         Description = "Building set with 484 pieces in 35 different colors.",
                         Status = ItemStatus.Available,
+                        BranchId = centralBranch.BranchId,
                         ToyType = "Building Blocks",
                         TargetAgeGroup = "4-99",
                         Manufacturer = "LEGO Group",
@@ -152,6 +206,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Catan Board Game",
                         Description = "Popular strategy game of resource trading and settlement building.",
                         Status = ItemStatus.Borrowed,
+                        BranchId = westsideBranch.BranchId,
                         ToyType = "Board Game",
                         TargetAgeGroup = "10+",
                         Manufacturer = "KOSMOS",
@@ -163,6 +218,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Rubik's 3x3 Speed Cube",
                         Description = "Classic color-matching puzzle that can be enjoyed anywhere.",
                         Status = ItemStatus.Available,
+                        BranchId = eastsideBranch.BranchId,
                         ToyType = "Puzzle",
                         TargetAgeGroup = "8+",
                         Manufacturer = "Spin Master",
@@ -174,6 +230,7 @@ namespace LibraryManagementSystem.Models
                         Name = "Monopoly Classic Edition",
                         Description = "Fast-dealing property trading board game for families.",
                         Status = ItemStatus.Available,
+                        BranchId = centralBranch.BranchId,
                         ToyType = "Board Game",
                         TargetAgeGroup = "8+",
                         Manufacturer = "Hasbro",
@@ -196,6 +253,7 @@ namespace LibraryManagementSystem.Models
                         Email = "alice@example.com",
                         Phone = "555-0101",
                         Address = "123 Maple Street",
+                        HomeBranchId = centralBranch.BranchId,
                         MembershipDate = DateTime.Now.AddDays(-90)
                     },
                     new Borrower
@@ -205,6 +263,7 @@ namespace LibraryManagementSystem.Models
                         Email = "bob@example.com",
                         Phone = "555-0102",
                         Address = "456 Oak Avenue",
+                        HomeBranchId = centralBranch.BranchId,
                         MembershipDate = DateTime.Now.AddDays(-80)
                     },
                     new Borrower
@@ -214,6 +273,7 @@ namespace LibraryManagementSystem.Models
                         Email = "charlie@example.com",
                         Phone = "555-0103",
                         Address = "789 Pine Road",
+                        HomeBranchId = westsideBranch.BranchId,
                         MembershipDate = DateTime.Now.AddDays(-70)
                     },
                     new Borrower
@@ -223,6 +283,7 @@ namespace LibraryManagementSystem.Models
                         Email = "diana@example.com",
                         Phone = "555-0104",
                         Address = "321 Elm Boulevard",
+                        HomeBranchId = eastsideBranch.BranchId,
                         MembershipDate = DateTime.Now.AddDays(-60)
                     },
                     new Borrower
@@ -232,6 +293,7 @@ namespace LibraryManagementSystem.Models
                         Email = "evan@example.com",
                         Phone = "555-0105",
                         Address = "654 Birch Drive",
+                        HomeBranchId = centralBranch.BranchId,
                         MembershipDate = DateTime.Now.AddDays(-50)
                     }
                 };
@@ -258,6 +320,7 @@ namespace LibraryManagementSystem.Models
                     {
                         LibraryItemId = bk1002.Id,
                         BorrowerId = alice.Id,
+                        BranchId = bk1002.BranchId,
                         BorrowDate = DateTime.Now.AddDays(-5),
                         DueDate = DateTime.Now.AddDays(9),
                         ReturnDate = null,
@@ -270,6 +333,7 @@ namespace LibraryManagementSystem.Models
                     {
                         LibraryItemId = mu2002.Id,
                         BorrowerId = bob.Id,
+                        BranchId = mu2002.BranchId,
                         BorrowDate = DateTime.Now.AddDays(-18),
                         DueDate = DateTime.Now.AddDays(-4),
                         ReturnDate = null,
@@ -282,6 +346,7 @@ namespace LibraryManagementSystem.Models
                     {
                         LibraryItemId = ty3002.Id,
                         BorrowerId = charlie.Id,
+                        BranchId = ty3002.BranchId,
                         BorrowDate = DateTime.Now.AddDays(-3),
                         DueDate = DateTime.Now.AddDays(11),
                         ReturnDate = null,
@@ -294,6 +359,7 @@ namespace LibraryManagementSystem.Models
                     {
                         LibraryItemId = bk1001.Id,
                         BorrowerId = diana.Id,
+                        BranchId = bk1001.BranchId,
                         BorrowDate = DateTime.Now.AddDays(-30),
                         DueDate = DateTime.Now.AddDays(-16),
                         ReturnDate = DateTime.Now.AddDays(-18),
@@ -306,6 +372,7 @@ namespace LibraryManagementSystem.Models
                     {
                         LibraryItemId = bk1003.Id,
                         BorrowerId = alice.Id,
+                        BranchId = bk1003.BranchId,
                         BorrowDate = DateTime.Now.AddDays(-25),
                         DueDate = DateTime.Now.AddDays(-11),
                         ReturnDate = DateTime.Now.AddDays(-8),
@@ -318,6 +385,7 @@ namespace LibraryManagementSystem.Models
                     {
                         LibraryItemId = bk1001.Id,
                         BorrowerId = bob.Id,
+                        BranchId = bk1001.BranchId,
                         BorrowDate = DateTime.Now.AddDays(-40),
                         DueDate = DateTime.Now.AddDays(-26),
                         ReturnDate = DateTime.Now.AddDays(-21),

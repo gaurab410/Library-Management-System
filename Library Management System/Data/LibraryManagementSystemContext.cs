@@ -19,6 +19,8 @@ namespace LibraryManagementSystem.Data
         public DbSet<BorrowTransaction> BorrowTransactions { get; set; } = default!;
         public DbSet<Branch> Branches { get; set; } = default!;
         public DbSet<BranchTransfer> BranchTransfers { get; set; } = default!;
+        public DbSet<Reservation> Reservations { get; set; } = default!;
+        public DbSet<Notification> Notifications { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -92,6 +94,19 @@ namespace LibraryManagementSystem.Data
                 .HasOne(t => t.ToBranch)
                 .WithMany()
                 .HasForeignKey(t => t.ToBranchId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure DeleteBehavior to Restrict deletion of items and borrowers with reservations
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.LibraryItem)
+                .WithMany()
+                .HasForeignKey(r => r.LibraryItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.Borrower)
+                .WithMany()
+                .HasForeignKey(r => r.BorrowerId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
