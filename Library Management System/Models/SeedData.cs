@@ -13,6 +13,46 @@ namespace LibraryManagementSystem.Models
                 // Ensure database tables are created
                 context.Database.EnsureCreated();
 
+                // Create missing tables if database already existed before new entities were added
+                try
+                {
+                    context.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS ""Reservations"" (
+                            ""ReservationId"" INTEGER NOT NULL CONSTRAINT ""PK_Reservations"" PRIMARY KEY AUTOINCREMENT,
+                            ""LibraryItemId"" INTEGER NOT NULL,
+                            ""BorrowerId"" INTEGER NOT NULL,
+                            ""QueuePosition"" INTEGER NOT NULL,
+                            ""Status"" INTEGER NOT NULL,
+                            ""CreatedAt"" TEXT NOT NULL,
+                            ""NotifiedAt"" TEXT NULL,
+                            ""ExpiresAt"" TEXT NULL,
+                            ""Notes"" TEXT NULL,
+                            CONSTRAINT ""FK_Reservations_Borrowers_BorrowerId"" FOREIGN KEY (""BorrowerId"") REFERENCES ""Borrowers"" (""Id"") ON DELETE RESTRICT,
+                            CONSTRAINT ""FK_Reservations_LibraryItems_LibraryItemId"" FOREIGN KEY (""LibraryItemId"") REFERENCES ""LibraryItems"" (""Id"") ON DELETE RESTRICT
+                        );
+                        CREATE INDEX IF NOT EXISTS ""IX_Reservations_BorrowerId"" ON ""Reservations"" (""BorrowerId"");
+                        CREATE INDEX IF NOT EXISTS ""IX_Reservations_LibraryItemId"" ON ""Reservations"" (""LibraryItemId"");
+
+                        CREATE TABLE IF NOT EXISTS ""Notifications"" (
+                            ""NotificationId"" INTEGER NOT NULL CONSTRAINT ""PK_Notifications"" PRIMARY KEY AUTOINCREMENT,
+                            ""BorrowerId"" INTEGER NOT NULL,
+                            ""LibraryItemId"" INTEGER NULL,
+                            ""Message"" TEXT NOT NULL,
+                            ""Type"" INTEGER NOT NULL,
+                            ""CreatedAt"" TEXT NOT NULL,
+                            ""IsRead"" INTEGER NOT NULL,
+                            CONSTRAINT ""FK_Notifications_Borrowers_BorrowerId"" FOREIGN KEY (""BorrowerId"") REFERENCES ""Borrowers"" (""Id"") ON DELETE CASCADE,
+                            CONSTRAINT ""FK_Notifications_LibraryItems_LibraryItemId"" FOREIGN KEY (""LibraryItemId"") REFERENCES ""LibraryItems"" (""Id"")
+                        );
+                        CREATE INDEX IF NOT EXISTS ""IX_Notifications_BorrowerId"" ON ""Notifications"" (""BorrowerId"");
+                        CREATE INDEX IF NOT EXISTS ""IX_Notifications_LibraryItemId"" ON ""Notifications"" (""LibraryItemId"");
+                    ");
+                }
+                catch
+                {
+                    // Ignore if tables are already in place
+                }
+
                 // 0. Seed Branches (City Central Library, Westside Branch, Eastside Branch)
                 if (!context.Branches.Any())
                 {

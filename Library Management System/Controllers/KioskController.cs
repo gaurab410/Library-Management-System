@@ -48,6 +48,7 @@ namespace LibraryManagementSystem.Controllers
         public async Task<IActionResult> ItemDetail(int id)
         {
             var item = await _context.LibraryItems
+                .Include(i => i.Branch)
                 .Include(i => i.BorrowTransactions)
                     .ThenInclude(t => t.Borrower)
                 .FirstOrDefaultAsync(i => i.Id == id);
@@ -67,9 +68,17 @@ namespace LibraryManagementSystem.Controllers
             ViewBag.ActiveLoan = activeLoan;
 
             // Check if item has any waiting reservations (if table exists)
-            var activeReservationCount = await _context.Reservations
-                .CountAsync(r => r.LibraryItemId == item.Id &&
-                                (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.ReadyForPickup));
+            int activeReservationCount = 0;
+            try
+            {
+                activeReservationCount = await _context.Reservations
+                    .CountAsync(r => r.LibraryItemId == item.Id &&
+                                    (r.Status == ReservationStatus.Pending || r.Status == ReservationStatus.ReadyForPickup));
+            }
+            catch
+            {
+                activeReservationCount = 0;
+            }
             ViewBag.ActiveReservationCount = activeReservationCount;
 
             return View(item);

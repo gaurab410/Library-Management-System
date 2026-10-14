@@ -1,0 +1,469 @@
+@model LibraryManagementSystem.Models.LibraryItem
+@using LibraryManagementSystem.Models
+
+@{
+    Layout = null;
+    ViewData["Title"] = $"Item Inquiry - {Model.Name}";
+    var activeLoan = ViewBag.ActiveLoan as BorrowTransaction;
+    int activeReservationCount = ViewBag.ActiveReservationCount != null ? (int)ViewBag.ActiveReservationCount : 0;
+    var now = DateTime.Now;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>@ViewData["Title"] - Express Kiosk</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --kiosk-bg: #0b1120;
+            --kiosk-card: #1e293b;
+            --kiosk-border: #334155;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #8b5cf6;
+            --status-green: #10b981;
+            --status-amber: #f59e0b;
+            --status-red: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0b1120 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .kiosk-header {
+            padding: 1.5rem 2.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+        }
+
+        .kiosk-logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .kiosk-logo i {
+            color: var(--accent-cyan);
+            font-size: 2.2rem;
+        }
+
+        .countdown-timer {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .countdown-timer strong {
+            color: var(--accent-cyan);
+        }
+
+        .btn-exit-session {
+            font-size: 1.15rem;
+            font-weight: 700;
+            padding: 0.6rem 1.5rem;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-exit-session:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .detail-card {
+            background: var(--kiosk-card);
+            border: 1px solid var(--kiosk-border);
+            border-radius: 28px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+        }
+
+        .status-hero-banner {
+            border-radius: 22px;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.75rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        .status-available {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(6, 182, 212, 0.12));
+            border: 2px solid var(--status-green);
+        }
+
+        .status-borrowed {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.1));
+            border: 2px solid var(--status-amber);
+        }
+
+        .status-maintenance {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(185, 28, 28, 0.1));
+            border: 2px solid var(--status-red);
+        }
+
+        .status-icon-bubble {
+            width: 80px;
+            height: 80px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.75rem;
+            flex-shrink: 0;
+        }
+
+        .status-available .status-icon-bubble {
+            background: rgba(16, 185, 129, 0.25);
+            color: #34d399;
+        }
+
+        .status-borrowed .status-icon-bubble {
+            background: rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+        }
+
+        .status-maintenance .status-icon-bubble {
+            background: rgba(239, 68, 68, 0.25);
+            color: #f87171;
+        }
+
+        .meta-box {
+            background: #0f172a;
+            border: 1px solid var(--kiosk-border);
+            border-radius: 18px;
+            padding: 1.25rem 1.5rem;
+            height: 100%;
+        }
+
+        .meta-label {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.4rem;
+        }
+
+        .meta-val {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #ffffff;
+            word-break: break-word;
+        }
+
+        .btn-scan-another {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 1.1rem 2.5rem;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
+            color: #041226;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-scan-another:hover {
+            background: linear-gradient(135deg, #22d3ee, #0369a1);
+            color: #000;
+            transform: scale(1.02);
+        }
+
+        .kiosk-footer {
+            margin-top: auto;
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="kiosk-header">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="kiosk-logo">
+                <i class="bi bi-upc-scan"></i>
+                <span>ITEM SCAN RESULT</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="countdown-timer" id="inactivityTimer">
+                    Returning in <strong id="secondsLeft">45</strong>s
+                </div>
+                <a asp-controller="Kiosk" asp-action="Index" class="btn-exit-session">
+                    <i class="bi bi-arrow-left"></i> Scan Another
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container py-4 flex-grow-1 d-flex flex-column justify-content-center">
+        <div class="detail-card">
+            
+            <!-- Hero Status Banner -->
+            @if (Model.Status == ItemStatus.Available)
+            {
+                <div class="status-hero-banner status-available">
+                    <div class="status-icon-bubble">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div>
+                        <span class="badge bg-success fs-6 text-uppercase px-3 py-2 mb-2 rounded-pill">Status: In Stock</span>
+                        <h1 class="display-6 fw-bold text-white mb-1">Available on Shelf</h1>
+                        <p class="fs-5 text-light mb-0">
+                            This item is currently on the shelf and ready for checkout. Bring it to the reception desk with your library card.
+                        </p>
+                    </div>
+                </div>
+            }
+            else if (Model.Status == ItemStatus.Borrowed)
+            {
+                <div class="status-hero-banner status-borrowed">
+                    <div class="status-icon-bubble">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div>
+                        <span class="badge bg-warning text-dark fs-6 text-uppercase px-3 py-2 mb-2 rounded-pill">Status: Checked Out</span>
+                        <h1 class="display-6 fw-bold text-white mb-1">Currently Borrowed</h1>
+                        <p class="fs-5 text-light mb-0">
+                            @if (activeLoan != null)
+                            {
+                                var daysRemaining = (activeLoan.DueDate.Date - now.Date).Days;
+                                <span>Expected return date: <strong>@activeLoan.DueDate.ToString("MMMM dd, yyyy")</strong> 
+                                    @(daysRemaining >= 0 ? $"({daysRemaining} day(s) remaining)" : "(Past due date)")
+                                </span>
+                            }
+                            else
+                            {
+                                <span>This item is currently on active loan.</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="status-hero-banner status-maintenance">
+                    <div class="status-icon-bubble">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div>
+                        <span class="badge bg-danger fs-6 text-uppercase px-3 py-2 mb-2 rounded-pill">Status: Unavailable</span>
+                        <h1 class="display-6 fw-bold text-white mb-1">Under Maintenance</h1>
+                        <p class="fs-5 text-light mb-0">
+                            This item is currently undergoing repair or catalog review and cannot be borrowed.
+                        </p>
+                    </div>
+                </div>
+            }
+
+            <!-- Item Main Header -->
+            <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+                <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill">
+                    <i class="bi bi-tag-fill me-1"></i> @Model.ItemType
+                </span>
+                <span class="badge bg-dark font-monospace text-info border border-secondary px-3 py-2 fs-6 rounded-pill">
+                    Code: @Model.LibraryCode
+                </span>
+                @if (Model.Branch != null)
+                {
+                    <span class="badge bg-secondary px-3 py-2 fs-6 rounded-pill">
+                        <i class="bi bi-geo-alt-fill me-1"></i> @Model.Branch.Name
+                    </span>
+                }
+            </div>
+
+            <h2 class="display-5 fw-bold text-white mb-3">@Model.Name</h2>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p class="fs-5 text-secondary mb-4" style="line-height: 1.6;">@Model.Description</p>
+            }
+
+            <!-- Metadata Grid -->
+            <div class="row g-3 mb-4">
+                @if (Model is BookItem book)
+                {
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">Author</div>
+                            <div class="meta-val">@(string.IsNullOrEmpty(book.Author) ? "Unknown" : book.Author)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">Genre</div>
+                            <div class="meta-val">@(string.IsNullOrEmpty(book.Genre) ? "General" : book.Genre)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">ISBN</div>
+                            <div class="meta-val font-monospace">@(string.IsNullOrEmpty(book.ISBN) ? "N/A" : book.ISBN)</div>
+                        </div>
+                    </div>
+                }
+                else if (Model is MusicItem music)
+                {
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">Artist</div>
+                            <div class="meta-val">@(string.IsNullOrEmpty(music.Artist) ? "Various" : music.Artist)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">Album</div>
+                            <div class="meta-val">@(string.IsNullOrEmpty(music.Album) ? Model.Name : music.Album)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">Release Year</div>
+                            <div class="meta-val">@(music.ReleaseYear > 0 ? music.ReleaseYear.ToString() : "N/A")</div>
+                        </div>
+                    </div>
+                }
+                else if (Model is ToyItem toy)
+                {
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">Toy Type</div>
+                            <div class="meta-val">@(string.IsNullOrEmpty(toy.ToyType) ? "Toy" : toy.ToyType)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">Target Age Group</div>
+                            <div class="meta-val">@(string.IsNullOrEmpty(toy.TargetAgeGroup) ? "All Ages" : toy.TargetAgeGroup)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="meta-box">
+                            <div class="meta-label">Manufacturer</div>
+                            <div class="meta-val">@(string.IsNullOrEmpty(toy.Manufacturer) ? "N/A" : toy.Manufacturer)</div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Reservation & Branch Status -->
+                <div class="col-md-6">
+                    <div class="meta-box">
+                        <div class="meta-label">Reservation Queue</div>
+                        <div class="meta-val d-flex align-items-center gap-2">
+                            <i class="bi bi-people-fill text-info"></i>
+                            @if (activeReservationCount > 0)
+                            {
+                                <span>@activeReservationCount patron(s) waiting in queue</span>
+                            }
+                            else
+                            {
+                                <span class="text-success">No active holds &bull; Open for reservation</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="meta-box">
+                        <div class="meta-label">Location / Branch</div>
+                        <div class="meta-val d-flex align-items-center gap-2">
+                            <i class="bi bi-building text-warning"></i>
+                            <span>@(Model.Branch?.Name ?? "Main Branch")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-3 border-top border-secondary border-opacity-25">
+                <a asp-controller="Kiosk" asp-action="Index" class="btn-scan-another">
+                    <i class="bi bi-upc-scan"></i> Scan Another Item
+                </a>
+
+                <div class="text-secondary small">
+                    <i class="bi bi-info-circle me-1"></i> Need help? Please ask at the front reception desk.
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="kiosk-footer">
+        <div>Express Self-Service Station &bull; Library Management System &bull; Touch anywhere to continue</div>
+    </footer>
+
+    <script>
+        // Auto-redirect timer after 45 seconds of inactivity
+        let timeoutSeconds = 45;
+        const countdownEl = document.getElementById('secondsLeft');
+
+        const interval = setInterval(() => {
+            timeoutSeconds--;
+            if (countdownEl) {
+                countdownEl.innerText = timeoutSeconds;
+            }
+            if (timeoutSeconds <= 0) {
+                clearInterval(interval);
+                window.location.href = '@Url.Action("Index", "Kiosk")';
+            }
+        }, 1000);
+
+        // Reset countdown on user interaction
+        function resetTimer() {
+            timeoutSeconds = 45;
+            if (countdownEl) {
+                countdownEl.innerText = timeoutSeconds;
+            }
+        }
+
+        window.addEventListener('touchstart', resetTimer);
+        window.addEventListener('click', resetTimer);
+        window.addEventListener('keydown', resetTimer);
+    </script>
+</body>
+</html>
