@@ -1,0 +1,440 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Self-Service Express Kiosk";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>@ViewData["Title"] - Library System</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --kiosk-bg: #0b1120;
+            --kiosk-card: #1e293b;
+            --kiosk-border: #334155;
+            --accent-cyan: #06b6d4;
+            --accent-cyan-hover: #0891b2;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0b1120 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .kiosk-header {
+            padding: 1.5rem 2.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+        }
+
+        .kiosk-logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .kiosk-logo i {
+            color: var(--accent-cyan);
+            font-size: 2.2rem;
+        }
+
+        .live-clock {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.1);
+            padding: 0.4rem 1.2rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .return-link {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .return-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .kiosk-title {
+            font-size: 2.75rem;
+            font-weight: 800;
+            line-height: 1.15;
+            background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .kiosk-subtitle {
+            font-size: 1.35rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .kiosk-card {
+            background: var(--kiosk-card);
+            border: 1px solid var(--kiosk-border);
+            border-radius: 28px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .kiosk-card:hover {
+            border-color: rgba(6, 182, 212, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .kiosk-card-account:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .card-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.35rem 0.9rem;
+            border-radius: 9999px;
+            margin-bottom: 1.25rem;
+        }
+
+        .tag-scan {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .tag-account {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .kiosk-input {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.1rem !important;
+            font-weight: 700;
+            height: 4.8rem;
+            border-radius: 20px !important;
+            background-color: #0f172a !important;
+            border: 2px solid #334155 !important;
+            color: #ffffff !important;
+            padding: 0 1.5rem !important;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+        }
+
+        .kiosk-input:focus {
+            border-color: var(--accent-cyan) !important;
+            box-shadow: 0 0 0 5px rgba(6, 182, 212, 0.25) !important;
+            outline: none;
+        }
+
+        .kiosk-input-account:focus {
+            border-color: var(--accent-purple) !important;
+            box-shadow: 0 0 0 5px rgba(139, 92, 246, 0.25) !important;
+        }
+
+        .kiosk-btn {
+            font-size: 1.75rem;
+            font-weight: 700;
+            height: 4.8rem;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            border: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-cyan {
+            background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
+            color: #041226;
+        }
+
+        .btn-cyan:hover, .btn-cyan:active {
+            background: linear-gradient(135deg, #22d3ee, #0369a1);
+            color: #000;
+            transform: scale(1.02);
+        }
+
+        .btn-purple {
+            background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+            color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-purple:hover, .btn-purple:active {
+            background: linear-gradient(135deg, #a78bfa, #6d28d9);
+            color: #fff;
+            transform: scale(1.02);
+        }
+
+        .quick-badge {
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .quick-badge:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .instruction-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            margin-top: 1.5rem;
+        }
+
+        .instruction-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--accent-cyan);
+            flex-shrink: 0;
+        }
+
+        .kiosk-footer {
+            margin-top: auto;
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="kiosk-header">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="kiosk-logo">
+                <i class="bi bi-display"></i>
+                <span>EXPRESS KIOSK</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="live-clock" id="kioskClock">--:--:--</div>
+                <a asp-controller="Public" asp-action="Index" class="return-link">
+                    <i class="bi bi-arrow-left-circle me-1"></i> Return to Main Site
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container py-4 flex-grow-1 d-flex flex-column justify-content-center">
+        <!-- Notification Alerts -->
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger border-0 rounded-4 p-3 mb-4 shadow d-flex align-items-center" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4) !important;">
+                <i class="bi bi-exclamation-octagon-fill fs-2 me-3"></i>
+                <div class="fs-5 fw-bold">@TempData["ErrorMessage"]</div>
+            </div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success border-0 rounded-4 p-3 mb-4 shadow d-flex align-items-center" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4) !important;">
+                <i class="bi bi-check-circle-fill fs-2 me-3"></i>
+                <div class="fs-5 fw-bold">@TempData["SuccessMessage"]</div>
+            </div>
+        }
+
+        <!-- Hero Heading -->
+        <div class="text-center mb-5">
+            <h1 class="kiosk-title">Touch-Free & Express Self-Service</h1>
+            <p class="kiosk-subtitle">Scan any item barcode to check availability, or enter your library card for account status.</p>
+        </div>
+
+        <!-- 2 Large Interactive Cards -->
+        <div class="row g-4 align-items-stretch">
+            <!-- SECTION 1: Item Scanner -->
+            <div class="col-lg-7">
+                <div class="kiosk-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="card-tag tag-scan">
+                                <i class="bi bi-upc-scan"></i> Item Scanner
+                            </span>
+                            <span class="text-white-50 small"><i class="bi bi-hand-index-thumb"></i> Touch to Type</span>
+                        </div>
+
+                        <h2 class="fs-2 fw-bold text-white mb-2">Scan or Enter Library Code</h2>
+                        <p class="text-secondary fs-5 mb-4">Aim barcode scanner or type the item code (e.g., BK-1001)</p>
+
+                        <form asp-controller="Kiosk" asp-action="Scan" method="get" class="mb-4">
+                            <div class="input-group">
+                                <input type="text" 
+                                       name="libraryCode" 
+                                       id="libraryCodeInput" 
+                                       class="form-control kiosk-input" 
+                                       placeholder="e.g. BK-1001" 
+                                       autocomplete="off" 
+                                       autofocus 
+                                       required />
+                                <button type="submit" class="btn btn-cyan kiosk-btn px-4">
+                                    <i class="bi bi-search"></i> Scan
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <span class="text-secondary fw-semibold small me-1">Try quick sample:</span>
+                            <span class="quick-badge" onclick="fillCode('BK-1001')">BK-1001</span>
+                            <span class="quick-badge" onclick="fillCode('BK-1002')">BK-1002</span>
+                            <span class="quick-badge" onclick="fillCode('MU-2001')">MU-2001</span>
+                            <span class="quick-badge" onclick="fillCode('TY-3001')">TY-3001</span>
+                        </div>
+                    </div>
+
+                    <div class="instruction-step">
+                        <div class="instruction-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                        <div>
+                            <strong class="text-white">Instant Status Check:</strong> Instantly displays book availability, waitlist queue, and pickup guidelines.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Account Summary -->
+            <div class="col-lg-5">
+                <div class="kiosk-card kiosk-card-account h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="card-tag tag-account">
+                                <i class="bi bi-person-vcard"></i> Patron Lookup
+                            </span>
+                        </div>
+
+                        <h2 class="fs-2 fw-bold text-white mb-2">Account Summary</h2>
+                        <p class="text-secondary fs-5 mb-4">View currently borrowed items, due dates, and fine balance</p>
+
+                        <form asp-controller="Kiosk" asp-action="AccountLookup" method="get" class="mb-4">
+                            <div class="input-group">
+                                <input type="text" 
+                                       name="cardNumber" 
+                                       id="cardNumberInput" 
+                                       class="form-control kiosk-input kiosk-input-account" 
+                                       placeholder="BW-1001" 
+                                       autocomplete="off" 
+                                       required />
+                                <button type="submit" class="btn btn-purple kiosk-btn px-4">
+                                    <i class="bi bi-arrow-right-circle"></i>
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <span class="text-secondary fw-semibold small me-1">Sample Card:</span>
+                            <span class="quick-badge" onclick="fillCard('BW-1001')">BW-1001</span>
+                            <span class="quick-badge" onclick="fillCard('BW-1002')">BW-1002</span>
+                        </div>
+                    </div>
+
+                    <div class="instruction-step">
+                        <div class="instruction-icon" style="color: var(--accent-purple);"><i class="bi bi-shield-check"></i></div>
+                        <div>
+                            <strong class="text-white">Privacy Protected:</strong> Fast inquiry view with zero credentials stored on the kiosk.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="kiosk-footer">
+        <div>Express Self-Service Station &bull; Library Management System &bull; Touch anywhere to interact</div>
+    </footer>
+
+    <script>
+        // Live Clock
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const clockEl = document.getElementById('kioskClock');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Sample input helpers
+        function fillCode(code) {
+            const input = document.getElementById('libraryCodeInput');
+            if (input) {
+                input.value = code;
+                input.focus();
+            }
+        }
+
+        function fillCard(card) {
+            const input = document.getElementById('cardNumberInput');
+            if (input) {
+                input.value = card;
+                input.focus();
+            }
+        }
+    </script>
+</body>
+</html>

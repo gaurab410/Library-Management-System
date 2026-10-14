@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagementSystem.Data;
 using LibraryManagementSystem.Models;
+using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -227,13 +228,47 @@ namespace LibraryManagementSystem.Controllers
             // Return item back to Available status
             transaction.LibraryItem.Status = ItemStatus.Available;
 
+            // Check if anyone is waiting in queue for this item
+            var nextReservation = await _context.Reservations
+                .Include(r => r.Borrower)
+                .Where(r => r.LibraryItemId == transaction.LibraryItemId 
+                        && r.Status == ReservationStatus.Pending)
+                .OrderBy(r => r.QueuePosition)
+                .FirstOrDefaultAsync();
+
+            string reservationMsg = "";
+            if (nextReservation != null)
+            {
+                nextReservation.Status = ReservationStatus.ReadyForPickup;
+                nextReservation.NotifiedAt = DateTime.Now;
+                nextReservation.ExpiresAt = DateTime.Now.AddDays(3);
+                reservationMsg = $" Item is now on hold for '{nextReservation.Borrower?.FullName}' (Ready for Pickup until {nextReservation.ExpiresAt:MMM dd}).";
+
+                await NotificationService.CreateNotificationAsync(
+                    _context,
+                    nextReservation.BorrowerId,
+                    transaction.LibraryItemId,
+                    $"Your reservation for '{transaction.LibraryItem.Name}' is ready for pickup. You have 3 days until {nextReservation.ExpiresAt:MMM dd, yyyy}.",
+                    NotificationType.ReservationReady);
+            }
+
+            if (fineAmount > 0)
+            {
+                await NotificationService.CreateNotificationAsync(
+                    _context,
+                    transaction.BorrowerId,
+                    transaction.LibraryItemId,
+                    $"Fine of ${fineAmount:F2} issued for returning '{transaction.LibraryItem.Name}' {daysLate} days late.",
+                    NotificationType.FineIssued);
+            }
+
             await _context.SaveChangesAsync();
 
             string fineMsg = fineAmount > 0
                 ? $" Fine of ${fineAmount:F2} calculated ({daysLate} days late). Fine status: {(model.IsFinePaid ? "PAID" : "UNPAID")}."
                 : "";
 
-            TempData["SuccessMessage"] = $"Item '{transaction.LibraryItem.Name}' returned successfully.{fineMsg}";
+            TempData["SuccessMessage"] = $"Item '{transaction.LibraryItem.Name}' returned successfully.{fineMsg}{reservationMsg}";
             return RedirectToAction(nameof(Index));
         }
 
