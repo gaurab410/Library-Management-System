@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LibraryManagementSystem.Models
 {
@@ -23,6 +24,13 @@ namespace LibraryManagementSystem.Models
 
         [Display(Name = "Active Member")]
         public bool IsActive { get; set; } = true;
+
+        [Display(Name = "Home Branch")]
+        public int? HomeBranchId { get; set; }
+
+        [ForeignKey("HomeBranchId")]
+        [Display(Name = "Home Branch")]
+        public virtual Branch? HomeBranch { get; set; }
 
         [Display(Name = "Membership Date")]
         public DateTime MembershipDate { get; set; } = DateTime.Now;

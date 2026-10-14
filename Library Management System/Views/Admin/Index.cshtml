@@ -61,6 +61,7 @@
                         <th>Code</th>
                         <th>Type</th>
                         <th>Item Name</th>
+                        <th>Branch</th>
                         <th>Specific Details</th>
                         <th>Status</th>
                         <th class="text-end pe-3">Actions</th>
@@ -70,7 +71,7 @@
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">No items found matching criteria.</td>
+                            <td colspan="7" class="text-center py-4 text-muted">No items found matching criteria.</td>
                         </tr>
                     }
                     else
@@ -96,6 +97,11 @@
                                 <td>
                                     <div class="fw-bold">@item.Name</div>
                                     <small class="text-muted">@item.Description</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        <i class="bi bi-geo-alt text-danger me-1"></i>@(item.Branch?.Name ?? "Unassigned")
+                                    </span>
                                 </td>
                                 <td>
                                     <small>

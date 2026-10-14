@@ -131,6 +131,7 @@ namespace LibraryManagementSystem.Controllers
                 {
                     LibraryItemId = item.Id,
                     BorrowerId = borrower.Id,
+                    BranchId = item.BranchId,
                     BorrowDate = DateTime.Now,
                     DueDate = DateTime.Now.AddDays(days),
                     ReturnDate = null,
@@ -274,7 +275,10 @@ namespace LibraryManagementSystem.Controllers
         // GET: Reception/Borrowers
         public async Task<IActionResult> Borrowers(string? search)
         {
-            var query = _context.Borrowers.Include(b => b.BorrowTransactions).AsQueryable();
+            var query = _context.Borrowers
+                .Include(b => b.HomeBranch)
+                .Include(b => b.BorrowTransactions)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -290,8 +294,9 @@ namespace LibraryManagementSystem.Controllers
         }
 
         // GET: Reception/CreateBorrower
-        public IActionResult CreateBorrower()
+        public async Task<IActionResult> CreateBorrower()
         {
+            ViewBag.Branches = new SelectList(await _context.Branches.Where(b => b.IsActive).OrderBy(b => b.Name).ToListAsync(), "BranchId", "Name");
             return View(new Borrower { CardNumber = $"BW-{new Random().Next(1000, 9999)}" });
         }
 
@@ -316,6 +321,7 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction(nameof(Borrowers));
             }
 
+            ViewBag.Branches = new SelectList(await _context.Branches.Where(b => b.IsActive).OrderBy(b => b.Name).ToListAsync(), "BranchId", "Name", borrower.HomeBranchId);
             return View(borrower);
         }
 
@@ -327,6 +333,7 @@ namespace LibraryManagementSystem.Controllers
             var borrower = await _context.Borrowers.FindAsync(id);
             if (borrower == null) return NotFound();
 
+            ViewBag.Branches = new SelectList(await _context.Branches.Where(b => b.IsActive || b.BranchId == borrower.HomeBranchId).OrderBy(b => b.Name).ToListAsync(), "BranchId", "Name", borrower.HomeBranchId);
             return View(borrower);
         }
 
@@ -353,6 +360,7 @@ namespace LibraryManagementSystem.Controllers
                 existing.Phone = borrower.Phone;
                 existing.Address = borrower.Address;
                 existing.IsActive = borrower.IsActive;
+                existing.HomeBranchId = borrower.HomeBranchId;
 
                 _context.Update(existing);
                 await _context.SaveChangesAsync();

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagementSystem.Data;
 using LibraryManagementSystem.Models;
@@ -16,10 +17,20 @@ namespace LibraryManagementSystem.Controllers
             _context = context;
         }
 
+        private async Task PopulateBranchesDropdownAsync(int? selectedBranchId = null)
+        {
+            var branches = await _context.Branches
+                .Where(b => b.IsActive || (selectedBranchId.HasValue && b.BranchId == selectedBranchId.Value))
+                .OrderBy(b => b.Name)
+                .ToListAsync();
+
+            ViewBag.Branches = new SelectList(branches, "BranchId", "Name", selectedBranchId);
+        }
+
         // GET: Admin/Index
         public async Task<IActionResult> Index(string? search, string? typeFilter, ItemStatus? statusFilter)
         {
-            var query = _context.LibraryItems.AsQueryable();
+            var query = _context.LibraryItems.Include(i => i.Branch).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -54,9 +65,11 @@ namespace LibraryManagementSystem.Controllers
         }
 
         // GET: Admin/CreateBook
-        public IActionResult CreateBook()
+        public async Task<IActionResult> CreateBook()
         {
-            var model = new ItemFormViewModel { ItemType = "Book", Status = ItemStatus.Available };
+            await PopulateBranchesDropdownAsync();
+            var firstBranch = await _context.Branches.Where(b => b.IsActive).OrderBy(b => b.Name).FirstOrDefaultAsync();
+            var model = new ItemFormViewModel { ItemType = "Book", Status = ItemStatus.Available, BranchId = firstBranch?.BranchId ?? 0 };
             return View(model);
         }
 
@@ -81,6 +94,11 @@ namespace LibraryManagementSystem.Controllers
                 ModelState.AddModelError("Genre", "Genre is required for books.");
             }
 
+            if (model.BranchId <= 0)
+            {
+                ModelState.AddModelError("BranchId", "Please select a branch location.");
+            }
+
             if (ModelState.IsValid)
             {
                 var book = new BookItem
@@ -89,6 +107,7 @@ namespace LibraryManagementSystem.Controllers
                     Description = model.Description,
                     LibraryCode = model.LibraryCode.Trim().ToUpper(),
                     Status = model.Status,
+                    BranchId = model.BranchId,
                     Author = model.Author!,
                     Genre = model.Genre!,
                     ISBN = model.ISBN,
@@ -101,13 +120,16 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await PopulateBranchesDropdownAsync(model.BranchId);
             return View(model);
         }
 
         // GET: Admin/CreateMusic
-        public IActionResult CreateMusic()
+        public async Task<IActionResult> CreateMusic()
         {
-            var model = new ItemFormViewModel { ItemType = "Music", Status = ItemStatus.Available, ReleaseYear = DateTime.Now.Year };
+            await PopulateBranchesDropdownAsync();
+            var firstBranch = await _context.Branches.Where(b => b.IsActive).OrderBy(b => b.Name).FirstOrDefaultAsync();
+            var model = new ItemFormViewModel { ItemType = "Music", Status = ItemStatus.Available, ReleaseYear = DateTime.Now.Year, BranchId = firstBranch?.BranchId ?? 0 };
             return View(model);
         }
 
@@ -127,6 +149,11 @@ namespace LibraryManagementSystem.Controllers
                 ModelState.AddModelError("Artist", "Artist is required for music items.");
             }
 
+            if (model.BranchId <= 0)
+            {
+                ModelState.AddModelError("BranchId", "Please select a branch location.");
+            }
+
             if (ModelState.IsValid)
             {
                 var music = new MusicItem
@@ -135,6 +162,7 @@ namespace LibraryManagementSystem.Controllers
                     Description = model.Description,
                     LibraryCode = model.LibraryCode.Trim().ToUpper(),
                     Status = model.Status,
+                    BranchId = model.BranchId,
                     Artist = model.Artist!,
                     ReleaseYear = model.ReleaseYear,
                     Album = model.Album,
@@ -148,13 +176,16 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await PopulateBranchesDropdownAsync(model.BranchId);
             return View(model);
         }
 
         // GET: Admin/CreateToy
-        public IActionResult CreateToy()
+        public async Task<IActionResult> CreateToy()
         {
-            var model = new ItemFormViewModel { ItemType = "Toy", Status = ItemStatus.Available };
+            await PopulateBranchesDropdownAsync();
+            var firstBranch = await _context.Branches.Where(b => b.IsActive).OrderBy(b => b.Name).FirstOrDefaultAsync();
+            var model = new ItemFormViewModel { ItemType = "Toy", Status = ItemStatus.Available, BranchId = firstBranch?.BranchId ?? 0 };
             return View(model);
         }
 
@@ -169,6 +200,11 @@ namespace LibraryManagementSystem.Controllers
                 ModelState.AddModelError("LibraryCode", "An item with this Library Code already exists.");
             }
 
+            if (model.BranchId <= 0)
+            {
+                ModelState.AddModelError("BranchId", "Please select a branch location.");
+            }
+
             if (ModelState.IsValid)
             {
                 var toy = new ToyItem
@@ -177,6 +213,7 @@ namespace LibraryManagementSystem.Controllers
                     Description = model.Description,
                     LibraryCode = model.LibraryCode.Trim().ToUpper(),
                     Status = model.Status,
+                    BranchId = model.BranchId,
                     ToyType = model.ToyType,
                     TargetAgeGroup = model.TargetAgeGroup,
                     Manufacturer = model.Manufacturer,
@@ -189,6 +226,7 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await PopulateBranchesDropdownAsync(model.BranchId);
             return View(model);
         }
 
@@ -207,6 +245,7 @@ namespace LibraryManagementSystem.Controllers
                 Description = item.Description,
                 LibraryCode = item.LibraryCode,
                 Status = item.Status,
+                BranchId = item.BranchId,
                 ItemType = item.ItemType
             };
 
@@ -230,6 +269,7 @@ namespace LibraryManagementSystem.Controllers
                 model.Manufacturer = toy.Manufacturer;
             }
 
+            await PopulateBranchesDropdownAsync(item.BranchId);
             return View(model);
         }
 
@@ -261,6 +301,10 @@ namespace LibraryManagementSystem.Controllers
             {
                 ModelState.AddModelError("Artist", "Artist is required for music.");
             }
+            if (model.BranchId <= 0)
+            {
+                ModelState.AddModelError("BranchId", "Please select a branch location.");
+            }
 
             if (ModelState.IsValid)
             {
@@ -268,6 +312,7 @@ namespace LibraryManagementSystem.Controllers
                 item.Description = model.Description;
                 item.LibraryCode = model.LibraryCode.Trim().ToUpper();
                 item.Status = model.Status;
+                item.BranchId = model.BranchId;
 
                 if (item is BookItem book)
                 {
@@ -295,6 +340,7 @@ namespace LibraryManagementSystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await PopulateBranchesDropdownAsync(model.BranchId);
             return View(model);
         }
 
@@ -304,6 +350,7 @@ namespace LibraryManagementSystem.Controllers
             if (id == null) return NotFound();
 
             var item = await _context.LibraryItems
+                .Include(i => i.Branch)
                 .Include(i => i.BorrowTransactions)
                     .ThenInclude(t => t.Borrower)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -334,6 +381,7 @@ namespace LibraryManagementSystem.Controllers
             if (id == null) return NotFound();
 
             var item = await _context.LibraryItems
+                .Include(i => i.Branch)
                 .Include(i => i.BorrowTransactions)
                 .FirstOrDefaultAsync(m => m.Id == id);
 

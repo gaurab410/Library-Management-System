@@ -35,6 +35,10 @@ namespace LibraryManagementSystem.Models
 
         public ItemStatus Status { get; set; } = ItemStatus.Available;
 
+        [Required(ErrorMessage = "Branch location is required.")]
+        [Display(Name = "Branch Location")]
+        public int BranchId { get; set; }
+
         // Book fields
         public string? Author { get; set; }
         public string? Genre { get; set; }
@@ -118,6 +122,18 @@ namespace LibraryManagementSystem.Models
         public decimal TotalPaidFines { get; set; }
         public decimal TotalUnpaidFines { get; set; }
         public int FinedTransactionsCount { get; set; }
+
+        // Analytics & Branch Enhancements
+        public List<BranchSummaryViewModel>? BranchSummaries { get; set; }
+        public Dictionary<string, int>? MonthlyBorrowCounts { get; set; }
+    }
+
+    public class BranchSummaryViewModel
+    {
+        public string BranchName { get; set; } = string.Empty;
+        public int TotalItems { get; set; }
+        public int AvailableItems { get; set; }
+        public int BorrowedItems { get; set; }
     }
 
     public class PublicSearchViewModel

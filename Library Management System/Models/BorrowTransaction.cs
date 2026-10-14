@@ -19,6 +19,15 @@ namespace LibraryManagementSystem.Models
         [ForeignKey("BorrowerId")]
         public virtual Borrower Borrower { get; set; } = default!;
 
+        [Required]
+        [Display(Name = "Branch")]
+        public int BranchId { get; set; }
+
+        [ForeignKey("BranchId")]
+        [Display(Name = "Branch")]
+        [Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidateNever]
+        public virtual Branch Branch { get; set; } = default!;
+
         [Display(Name = "Borrow Date")]
         public DateTime BorrowDate { get; set; } = DateTime.Now;
 

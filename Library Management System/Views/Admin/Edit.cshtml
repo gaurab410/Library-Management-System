@@ -29,6 +29,11 @@
                             <label asp-for="Status" class="form-label fw-bold"></label>
                             <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<LibraryManagementSystem.Models.ItemStatus>()"></select>
                         </div>
+                        <div class="col-md-12">
+                            <label asp-for="BranchId" class="form-label fw-bold"></label>
+                            <select asp-for="BranchId" class="form-select" asp-items="ViewBag.Branches" required></select>
+                            <span asp-validation-for="BranchId" class="text-danger small"></span>
+                        </div>
                         <div class="col-12">
                             <label asp-for="Name" class="form-label fw-bold"></label>
                             <input asp-for="Name" class="form-control" required />

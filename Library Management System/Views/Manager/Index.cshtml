@@ -6,10 +6,22 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-line-fill text-warning me-2"></i>Manager Analytics Dashboard</h2>
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-bar-chart-line-fill text-warning me-2"></i>Manager Analytics Dashboard
+        </h2>
         <p class="text-muted mb-0">High-level statistics across borrowing operations, inventory health, and fine collections.</p>
     </div>
-    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer me-1"></i> Print Report</button>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportCsv" class="btn btn-outline-success btn-sm fw-bold shadow-sm">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+        </a>
+        <a asp-action="ExportPdf" class="btn btn-outline-danger btn-sm fw-bold shadow-sm">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Export PDF
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm shadow-sm">
+            <i class="bi bi-printer me-1"></i> Print Report
+        </button>
+    </div>
 </div>
 
 <!-- 1. BORROWING STATISTICS -->
@@ -63,6 +75,51 @@
                         <h2 class="display-6 fw-bold mb-0">@Model.OverdueLoans</h2>
                     </div>
                     <i class="bi bi-exclamation-triangle fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INTERACTIVE CHARTS & VISUAL ANALYTICS -->
+<h5 class="fw-bold text-uppercase text-secondary mb-3 mt-4">
+    <i class="bi bi-graph-up text-primary me-2"></i>Interactive Analytics &amp; Visual Trends
+</h5>
+<div class="row g-4 mb-4">
+    <!-- Bar Chart: Monthly Borrowing Trends (Last 6 Months) -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-bar-chart-fill text-info me-2"></i>Monthly Borrowing Trends (Last 6 Months)
+                </h6>
+                <span class="badge bg-primary">Live API Data</span>
+            </div>
+            <div class="card-body">
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="borrowingTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doughnut Chart: Item Type Distribution -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">
+                    <i class="bi bi-pie-chart-fill text-warning me-2"></i>Item Type Distribution (Books vs Music vs Toys)
+                </h6>
+                <span class="badge bg-secondary">Total: @Model.TotalItems</span>
+            </div>
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <div style="position: relative; height: 260px; width: 100%;">
+                    <canvas id="itemTypeChart"></canvas>
+                </div>
+                <div class="mt-3 text-center small text-muted">
+                    <span class="me-3"><i class="bi bi-square-fill text-primary"></i> Books: @Model.BooksCount</span>
+                    <span class="me-3"><i class="bi bi-square-fill text-info"></i> Music: @Model.MusicCount</span>
+                    <span><i class="bi bi-square-fill text-warning"></i> Toys: @Model.ToysCount</span>
                 </div>
             </div>
         </div>
@@ -153,6 +210,40 @@
     </div>
 </div>
 
+<!-- BRANCH DISTRIBUTION SUMMARY -->
+@if (Model.BranchSummaries != null && Model.BranchSummaries.Any())
+{
+    <h5 class="fw-bold text-uppercase text-secondary mb-3 mt-4">
+        <i class="bi bi-diagram-3-fill text-info me-2"></i>Branch Distribution Summary
+    </h5>
+    <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+        @foreach (var branch in Model.BranchSummaries)
+        {
+            <div class="col">
+                <div class="card shadow-sm border-0 h-100 bg-white">
+                    <div class="card-header bg-light py-2 border-0">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i>@branch.BranchName</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Total Inventory:</span>
+                            <strong class="text-dark">@branch.TotalItems items</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Available:</span>
+                            <span class="badge bg-success">@branch.AvailableItems available</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Currently Borrowed:</span>
+                            <span class="badge bg-primary">@branch.BorrowedItems borrowed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
 <!-- 3. FINE STATISTICS -->
 <h5 class="fw-bold text-uppercase text-secondary mb-3 mt-4"><i class="bi bi-cash-coin text-success me-2"></i>3. Fine Statistics ($1.50/day late rate)</h5>
 <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
@@ -216,8 +307,8 @@
                     @foreach (var t in recentTransactions)
                     {
                         <tr>
-                            <td><strong>@t.LibraryItem.Name</strong> (<code>@t.LibraryItem.LibraryCode</code>)</td>
-                            <td>@t.Borrower.FullName (<code>@t.Borrower.CardNumber</code>)</td>
+                            <td><strong>@t.LibraryItem?.Name</strong> (<code>@t.LibraryItem?.LibraryCode</code>)</td>
+                            <td>@t.Borrower?.FullName (<code>@t.Borrower?.CardNumber</code>)</td>
                             <td>@t.BorrowDate.ToString("yyyy-MM-dd")</td>
                             <td>@t.DueDate.ToString("yyyy-MM-dd")</td>
                             <td>
@@ -249,3 +340,103 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            // 1. Fetch borrowing trend from JSON endpoint for the Bar Chart
+            try {
+                const response = await fetch('@Url.Action("BorrowingTrend", "Manager")');
+                if (!response.ok) throw new Error("Failed to fetch borrowing trend data");
+                const trendData = await response.json();
+
+                // Extract the last 6 months for the monthly trend chart
+                const labels6Months = (trendData.labels || []).slice(-6);
+                const counts6Months = (trendData.counts || trendData.data || []).slice(-6);
+
+                const ctxBar = document.getElementById('borrowingTrendChart').getContext('2d');
+                new Chart(ctxBar, {
+                    type: 'bar',
+                    data: {
+                        labels: labels6Months,
+                        datasets: [{
+                            label: 'Borrowings',
+                            data: counts6Months,
+                            backgroundColor: 'rgba(13, 110, 253, 0.75)',
+                            borderColor: 'rgba(13, 110, 253, 1)',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            barPercentage: 0.55
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return ` Loans: ${context.parsed.y}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { precision: 0 },
+                                grid: { color: 'rgba(0, 0, 0, 0.06)' }
+                            },
+                            x: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error loading borrowing trend chart:", error);
+            }
+
+            // 2. Render Doughnut Chart for Item Type Distribution
+            try {
+                const books = @Model.BooksCount;
+                const music = @Model.MusicCount;
+                const toys = @Model.ToysCount;
+
+                const ctxDoughnut = document.getElementById('itemTypeChart').getContext('2d');
+                new Chart(ctxDoughnut, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Books', 'Music Albums', 'Toys & Games'],
+                        datasets: [{
+                            data: [books, music, toys],
+                            backgroundColor: [
+                                '#0d6efd', // Primary Blue
+                                '#0dcaf0', // Info Cyan
+                                '#ffc107'  // Warning Amber
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff',
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { padding: 15 }
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            } catch (error) {
+                console.error("Error rendering item type doughnut chart:", error);
+            }
+        });
+    </script>
+}

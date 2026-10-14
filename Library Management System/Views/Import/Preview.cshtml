@@ -1,0 +1,243 @@
+@model LibraryManagementSystem.Models.ImportPreviewViewModel
+@{
+    ViewData["Title"] = "Import Preview & Validation";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-eye-fill text-primary me-2"></i>Import Preview &amp; Validation
+        </h2>
+        <p class="text-muted mb-0">
+            Reviewing file: <strong class="text-dark font-monospace">@Model.FileName</strong>. Verify all rows before committing to the inventory.
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Upload" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-repeat me-1"></i> Upload Different File
+        </a>
+    </div>
+</div>
+
+<!-- Summary Metrics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 border-start border-4 border-primary bg-white h-100">
+            <div class="card-body p-3">
+                <span class="text-muted small fw-bold text-uppercase d-block mb-1">Total Rows</span>
+                <span class="fs-3 fw-bold text-dark">@Model.TotalRows</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 border-start border-4 border-success bg-white h-100">
+            <div class="card-body p-3">
+                <span class="text-success small fw-bold text-uppercase d-block mb-1">Ready to Import</span>
+                <span class="fs-3 fw-bold text-success">@Model.ValidCount</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 border-start border-4 border-warning bg-white h-100">
+            <div class="card-body p-3">
+                <span class="text-warning small fw-bold text-uppercase d-block mb-1">Duplicate Codes</span>
+                <span class="fs-3 fw-bold text-warning">@Model.DuplicateCount</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 border-start border-4 border-danger bg-white h-100">
+            <div class="card-body p-3">
+                <span class="text-danger small fw-bold text-uppercase d-block mb-1">Invalid Rows</span>
+                <span class="fs-3 fw-bold text-danger">@Model.InvalidCount</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Decision / Action Bar -->
+<div class="card shadow-sm border-0 mb-4 bg-white">
+    <div class="card-body p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            @if (Model.ValidCount > 0)
+            {
+                <span class="text-success fw-bold">
+                    <i class="bi bi-check-circle-fill me-1"></i> @Model.ValidCount item(s) are valid and ready to be imported.
+                </span>
+                @if (Model.InvalidCount > 0 || Model.DuplicateCount > 0)
+                {
+                    <span class="text-muted small ms-2">
+                        (@(Model.InvalidCount + Model.DuplicateCount) invalid or duplicate items will be skipped automatically)
+                    </span>
+                }
+            }
+            else
+            {
+                <span class="text-danger fw-bold">
+                    <i class="bi bi-x-circle-fill me-1"></i> No valid rows found in this file to import.
+                </span>
+            }
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i> Cancel
+            </a>
+            <form asp-action="Confirm" method="post" class="d-inline">
+                <input type="hidden" name="sessionKey" value="@Model.SessionKey" />
+                <button type="submit" 
+                        class="btn btn-success fw-bold px-4" 
+                        id="confirmImportBtn"
+                        @(Model.ValidCount == 0 ? "disabled" : "")>
+                    <i class="bi bi-check-lg me-1"></i> Confirm Import (@Model.ValidCount Items)
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Preview Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-list-nested me-2"></i>Row-by-Row Validation Details</h5>
+        <span class="badge bg-light text-dark border">Row count: @Model.TotalRows</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th style="width: 110px;">Status</th>
+                        <th style="width: 100px;">Type</th>
+                        <th style="width: 120px;">Code</th>
+                        <th>Item Name</th>
+                        <th>Specific Details</th>
+                        <th style="width: 90px;">Branch</th>
+                        <th>Validation Reason / Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Rows)
+                    {
+                        var rowClass = row.IsValid ? "table-success" : "table-danger";
+                        <tr class="@rowClass">
+                            <td class="text-muted fw-bold">@row.RowIndex</td>
+                            <td>
+                                @if (row.IsValid)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Valid
+                                    </span>
+                                }
+                                else if (row.IsDuplicate)
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-copy me-1"></i> Duplicate
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-exclamation-octagon-fill me-1"></i> Invalid
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @if (row.Type == "Book")
+                                {
+                                    <span class="badge bg-primary">Book</span>
+                                }
+                                else if (row.Type == "Music")
+                                {
+                                    <span class="badge bg-info text-dark">Music</span>
+                                }
+                                else if (row.Type == "Toy")
+                                {
+                                    <span class="badge bg-warning text-dark">Toy</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@(string.IsNullOrWhiteSpace(row.Type) ? "Unknown" : row.Type)</span>
+                                }
+                            </td>
+                            <td>
+                                <code>@(string.IsNullOrWhiteSpace(row.LibraryCode) ? "-" : row.LibraryCode)</code>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@(string.IsNullOrWhiteSpace(row.Name) ? "<Empty Name>" : row.Name)</div>
+                                @if (!string.IsNullOrWhiteSpace(row.Description))
+                                {
+                                    <small class="text-muted d-block text-truncate" style="max-width: 250px;">@row.Description</small>
+                                }
+                            </td>
+                            <td>
+                                <small>
+                                    @if (row.Type == "Book")
+                                    {
+                                        <span><strong>Author:</strong> @(row.Author ?? "-") | <strong>Genre:</strong> @(row.Genre ?? "-")</span>
+                                        @if (!string.IsNullOrWhiteSpace(row.ISBN))
+                                        {
+                                            <span class="d-block text-muted">ISBN: @row.ISBN</span>
+                                        }
+                                    }
+                                    else if (row.Type == "Music")
+                                    {
+                                        <span><strong>Artist:</strong> @(row.Artist ?? "-") (@(row.ReleaseYear?.ToString() ?? "N/A"))</span>
+                                        @if (!string.IsNullOrWhiteSpace(row.Album) || !string.IsNullOrWhiteSpace(row.Format))
+                                        {
+                                            <span class="d-block text-muted">Album: @(row.Album ?? "-") | Format: @(row.Format ?? "-")</span>
+                                        }
+                                    }
+                                    else if (row.Type == "Toy")
+                                    {
+                                        <span><strong>Type:</strong> @(row.ToyType ?? "-") | <strong>Age:</strong> @(row.TargetAgeGroup ?? "-")</span>
+                                        @if (!string.IsNullOrWhiteSpace(row.Manufacturer))
+                                        {
+                                            <span class="d-block text-muted">Maker: @row.Manufacturer</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </small>
+                            </td>
+                            <td>
+                                @(row.BranchId.HasValue ? $"Branch #{row.BranchId.Value}" : "-")
+                            </td>
+                            <td>
+                                @if (row.IsValid)
+                                {
+                                    <span class="text-success small fw-bold">
+                                        <i class="bi bi-check-lg me-1"></i> @row.ValidationMessage
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger small fw-bold">
+                                        <i class="bi bi-x-circle-fill me-1"></i> @row.ValidationMessage
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Action Bar -->
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Cancel &amp; Back to Importer Home
+    </a>
+    <form asp-action="Confirm" method="post" class="d-inline">
+        <input type="hidden" name="sessionKey" value="@Model.SessionKey" />
+        <button type="submit" 
+                class="btn btn-success fw-bold px-4" 
+                @(Model.ValidCount == 0 ? "disabled" : "")>
+            <i class="bi bi-check-lg me-1"></i> Confirm Import (@Model.ValidCount Items)
+        </button>
+    </form>
+</div>

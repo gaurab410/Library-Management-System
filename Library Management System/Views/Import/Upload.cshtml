@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "Upload CSV File";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Upload Inventory CSV</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">
+                    Select a UTF-8 encoded <code>.csv</code> file matching the system's template specification. You will be able to preview and validate the items before anything is saved.
+                </p>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <h6 class="alert-heading fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> Upload Error</h6>
+                        <div asp-validation-summary="All" class="mb-0 small"></div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <form asp-action="Upload" method="post" enctype="multipart/form-data">
+
+                    <div class="mb-4">
+                        <label for="csvFileInput" class="form-label fw-bold">Select CSV File</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-file-earmark-spreadsheet text-success"></i></span>
+                            <input type="file" 
+                                   class="form-control form-control-lg" 
+                                   id="csvFileInput" 
+                                   name="file" 
+                                   accept=".csv" 
+                                   required />
+                        </div>
+                        <div class="form-text mt-2">
+                            Only <code>.csv</code> files are accepted. Maximum recommended upload: 1,000 items per batch.
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 border mb-4">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill text-info fs-4 me-3"></i>
+                            <div>
+                                <strong class="d-block text-dark">Need the correct column format?</strong>
+                                <span class="text-muted small">Download our pre-formatted template with example rows.</span>
+                            </div>
+                            <a asp-action="DownloadTemplate" class="btn btn-outline-secondary btn-sm ms-auto text-nowrap">
+                                <i class="bi bi-download me-1"></i> Download
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold" id="uploadSubmitBtn">
+                            <i class="bi bi-arrow-right-circle me-1"></i> Upload &amp; Preview
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
