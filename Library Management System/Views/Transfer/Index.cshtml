@@ -1,0 +1,248 @@
+@model IEnumerable<LibraryManagementSystem.Models.BranchTransfer>
+@{
+    ViewData["Title"] = "Inter-Branch Transfers";
+    var branches = ViewBag.Branches as List<LibraryManagementSystem.Models.Branch> ?? new List<LibraryManagementSystem.Models.Branch>();
+    var pendingCount = Model.Count(t => t.Status == LibraryManagementSystem.Models.TransferStatus.Requested || t.Status == LibraryManagementSystem.Models.TransferStatus.InTransit);
+    var receivedCount = Model.Count(t => t.Status == LibraryManagementSystem.Models.TransferStatus.Received);
+    var cancelledCount = Model.Count(t => t.Status == LibraryManagementSystem.Models.TransferStatus.Cancelled);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-arrow-left-right text-primary me-2"></i>Inter-Branch Inventory Transfers
+        </h2>
+        <p class="text-muted mb-0">Request item transfers between branch locations, monitor in-transit items, and process branch receipts.</p>
+    </div>
+    <div>
+        <a asp-action="Create" class="btn btn-primary fw-bold shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Request New Transfer
+        </a>
+    </div>
+</div>
+
+<!-- Metrics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-warning bg-opacity-10 border-start border-warning border-4">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Pending / In Transit</span>
+                    <h3 class="fw-bold text-warning mb-0">@pendingCount</h3>
+                </div>
+                <i class="bi bi-truck fs-1 text-warning opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-success bg-opacity-10 border-start border-success border-4">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Completed / Received</span>
+                    <h3 class="fw-bold text-success mb-0">@receivedCount</h3>
+                </div>
+                <i class="bi bi-check-circle-fill fs-1 text-success opacity-75"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm bg-secondary bg-opacity-10 border-start border-secondary border-4">
+            <div class="card-body d-flex justify-content-between align-items-center p-3">
+                <div>
+                    <span class="text-muted small text-uppercase fw-bold">Cancelled</span>
+                    <h3 class="fw-bold text-secondary mb-0">@cancelledCount</h3>
+                </div>
+                <i class="bi bi-x-circle fs-1 text-secondary opacity-75"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card shadow-sm border-0 mb-4 bg-white">
+    <div class="card-body p-3">
+        <form method="get" asp-action="Index">
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <select name="branchId" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Branches</option>
+                        @foreach (var branch in branches)
+                        {
+                            <option value="@branch.BranchId" selected="@(ViewBag.SelectedBranchId == branch.BranchId)">@branch.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Transfer Statuses</option>
+                        <option value="Requested" selected="@(ViewBag.SelectedStatus?.ToString() == "Requested")">Requested</option>
+                        <option value="InTransit" selected="@(ViewBag.SelectedStatus?.ToString() == "InTransit")">In Transit</option>
+                        <option value="Received" selected="@(ViewBag.SelectedStatus?.ToString() == "Received")">Received</option>
+                        <option value="Cancelled" selected="@(ViewBag.SelectedStatus?.ToString() == "Cancelled")">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary w-100"><i class="bi bi-arrow-counterclockwise me-1"></i> Reset</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transfers Table -->
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Item Details</th>
+                        <th>Route (From &rarr; To)</th>
+                        <th>Requested By</th>
+                        <th>Status</th>
+                        <th>Dates</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                                No transfer records found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var transfer in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold text-muted">#@transfer.BranchTransferId</td>
+                                <td>
+                                    <div class="fw-bold text-dark">@transfer.LibraryItem.Name</div>
+                                    <div class="small">
+                                        <code>@transfer.LibraryItem.LibraryCode</code>
+                                        @if (transfer.LibraryItem is LibraryManagementSystem.Models.BookItem)
+                                        {
+                                            <span class="badge bg-primary-subtle text-primary border ms-1">Book</span>
+                                        }
+                                        else if (transfer.LibraryItem is LibraryManagementSystem.Models.MusicItem)
+                                        {
+                                            <span class="badge bg-info-subtle text-info-emphasis border ms-1">Music</span>
+                                        }
+                                        else if (transfer.LibraryItem is LibraryManagementSystem.Models.ToyItem)
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border ms-1">Toy</span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(transfer.Notes))
+                                    {
+                                        <small class="text-muted d-block mt-1 fst-italic">Note: @transfer.Notes</small>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi bi-geo-alt text-danger me-1"></i>@transfer.FromBranch.Name
+                                        </span>
+                                        <i class="bi bi-arrow-right text-primary fw-bold mx-1"></i>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                                            <i class="bi bi-geo-alt-fill text-primary me-1"></i>@transfer.ToBranch.Name
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-secondary border">
+                                        @transfer.RequestedByRole
+                                    </span>
+                                </td>
+                                <td>
+                                    @switch (transfer.Status)
+                                    {
+                                        case LibraryManagementSystem.Models.TransferStatus.Requested:
+                                            <span class="badge bg-warning text-dark px-2 py-1">
+                                                <i class="bi bi-hourglass-split me-1"></i>Requested
+                                            </span>
+                                            break;
+                                        case LibraryManagementSystem.Models.TransferStatus.InTransit:
+                                            <span class="badge bg-info text-dark px-2 py-1">
+                                                <i class="bi bi-truck me-1"></i>In Transit
+                                            </span>
+                                            break;
+                                        case LibraryManagementSystem.Models.TransferStatus.Received:
+                                            <span class="badge bg-success px-2 py-1">
+                                                <i class="bi bi-check-circle-fill me-1"></i>Received
+                                            </span>
+                                            break;
+                                        case LibraryManagementSystem.Models.TransferStatus.Cancelled:
+                                            <span class="badge bg-secondary px-2 py-1">
+                                                <i class="bi bi-x-circle me-1"></i>Cancelled
+                                            </span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <div><span class="text-muted">Req:</span> @transfer.RequestedAt.ToString("MMM dd, yyyy HH:mm")</div>
+                                        @if (transfer.CompletedAt.HasValue)
+                                        {
+                                            <div><span class="text-muted">Done:</span> @transfer.CompletedAt.Value.ToString("MMM dd, yyyy HH:mm")</div>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group btn-group-sm">
+                                        @if (transfer.Status == LibraryManagementSystem.Models.TransferStatus.Requested)
+                                        {
+                                            <form asp-action="MarkInTransit" asp-route-id="@transfer.BranchTransferId" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-info" title="Mark In Transit">
+                                                    <i class="bi bi-truck"></i> In Transit
+                                                </button>
+                                            </form>
+                                            <form asp-action="Receive" asp-route-id="@transfer.BranchTransferId" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-success" title="Mark as Received" onclick="return confirm('Confirm receipt of item at @transfer.ToBranch.Name? Item branch location will be updated.');">
+                                                    <i class="bi bi-check2-circle"></i> Receive
+                                                </button>
+                                            </form>
+                                            <form asp-action="Cancel" asp-route-id="@transfer.BranchTransferId" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-danger" title="Cancel Transfer" onclick="return confirm('Cancel this transfer request?');">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else if (transfer.Status == LibraryManagementSystem.Models.TransferStatus.InTransit)
+                                        {
+                                            <form asp-action="Receive" asp-route-id="@transfer.BranchTransferId" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-success" title="Mark as Received" onclick="return confirm('Confirm receipt of item at @transfer.ToBranch.Name? Item branch location will be updated.');">
+                                                    <i class="bi bi-check2-circle"></i> Receive
+                                                </button>
+                                            </form>
+                                            <form asp-action="Cancel" asp-route-id="@transfer.BranchTransferId" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-danger" title="Cancel Transfer" onclick="return confirm('Cancel this transfer?');">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else if (transfer.Status == LibraryManagementSystem.Models.TransferStatus.Received)
+                                        {
+                                            <span class="text-success small fw-semibold">
+                                                <i class="bi bi-check-all fs-6"></i> Complete
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Cancelled</span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
