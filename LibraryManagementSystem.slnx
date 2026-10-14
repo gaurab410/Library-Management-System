@@ -1,3 +1,4 @@
 <Solution>
-  <Project Path="MvcMovie/LibraryManagementSystem.csproj" />
+  <Project Path="Library Management System/LibraryManagementSystem.csproj" />
+  <Project Path="LibraryManagementSystem.Tests/LibraryManagementSystem.Tests.csproj" />
 </Solution>
