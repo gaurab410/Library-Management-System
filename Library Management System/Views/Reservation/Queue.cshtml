@@ -1,0 +1,193 @@
+@model IEnumerable<LibraryManagementSystem.Models.Reservation>
+@using LibraryManagementSystem.Models
+
+@{
+    var item = ViewBag.LibraryItem as LibraryManagementSystem.Models.LibraryItem;
+    ViewData["Title"] = $"Queue for {item?.Name ?? "Item"}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a asp-action="Index">Reservations</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Queue</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-people-fill text-primary me-2"></i>Item Waitlist Queue
+        </h2>
+    </div>
+    <div class="d-flex gap-2">
+        @if (item != null)
+        {
+            <a asp-action="Create" asp-route-libraryItemId="@item.Id" class="btn btn-primary fw-bold">
+                <i class="bi bi-plus-circle me-1"></i> Add Patron to Queue
+            </a>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Reservations
+        </a>
+    </div>
+</div>
+
+@if (item != null)
+{
+    <!-- Item Summary Header Card -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <span class="badge bg-secondary mb-2">@item.ItemType</span>
+                    <h3 class="fw-bold mb-1">@item.Name</h3>
+                    <div class="text-muted font-monospace mb-2">
+                        <i class="bi bi-upc-scan me-1"></i> @item.LibraryCode
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(item.Description))
+                    {
+                        <p class="text-secondary small mb-0">@item.Description</p>
+                    }
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="small text-muted text-uppercase fw-bold mb-1">Current Item Status</div>
+                    <div>
+                        @switch (item.Status)
+                        {
+                            case ItemStatus.Available:
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    <i class="bi bi-check-circle me-1"></i> Available
+                                </span>
+                                break;
+                            case ItemStatus.Borrowed:
+                                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                    <i class="bi bi-clock-history me-1"></i> On Loan (Borrowed)
+                                </span>
+                                break;
+                            case ItemStatus.Damaged:
+                                <span class="badge bg-danger fs-6 px-3 py-2">
+                                    <i class="bi bi-tools me-1"></i> Under Repair / Damaged
+                                </span>
+                                break;
+                            default:
+                                <span class="badge bg-secondary fs-6 px-3 py-2">@item.Status</span>
+                                break;
+                        }
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        <strong>@Model.Count()</strong> patron(s) waiting in queue
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Queue List -->
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-sort-numeric-down text-primary me-2"></i>Ordered Waitlist (FIFO)</h5>
+        <span class="badge bg-primary">@Model.Count() Waiting</span>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-check-circle-fill text-success display-4 mb-3 d-block"></i>
+                <h5 class="text-muted">No Patrons in Waitlist Queue</h5>
+                <p class="text-secondary small mb-3">There are currently no pending reservations for this item.</p>
+                @if (item != null)
+                {
+                    <a asp-action="Create" asp-route-libraryItemId="@item.Id" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> Add Patron to Queue
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4" style="width: 110px;">Position</th>
+                            <th>Patron Name</th>
+                            <th>Card Number</th>
+                            <th>Date Queued</th>
+                            <th>Hold Status</th>
+                            <th>Expires At</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var res in Model)
+                        {
+                            <tr class="@(res.Status == ReservationStatus.ReadyForPickup ? "table-success" : "")">
+                                <td class="ps-4">
+                                    <span class="badge rounded-pill @(res.Status == ReservationStatus.ReadyForPickup ? "bg-success" : "bg-warning text-dark") fs-6 px-3 py-2 shadow-sm">
+                                        #@res.QueuePosition
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">@res.Borrower.FullName</div>
+                                    @if (!string.IsNullOrWhiteSpace(res.Borrower.Email))
+                                    {
+                                        <div class="small text-muted"><i class="bi bi-envelope me-1"></i>@res.Borrower.Email</div>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border font-monospace">@res.Borrower.CardNumber</span>
+                                </td>
+                                <td>
+                                    <div class="small">@res.CreatedAt.ToString("MMM dd, yyyy")</div>
+                                    <div class="text-muted smaller" style="font-size: 0.8rem;">@res.CreatedAt.ToString("hh:mm tt")</div>
+                                </td>
+                                <td>
+                                    @if (res.Status == ReservationStatus.ReadyForPickup)
+                                    {
+                                        <span class="badge bg-success py-2 px-3">
+                                            <i class="bi bi-bell-fill me-1"></i> Ready for Pickup
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark py-2 px-3">
+                                            <i class="bi bi-hourglass-split me-1"></i> In Queue
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (res.Status == ReservationStatus.ReadyForPickup && res.ExpiresAt.HasValue)
+                                    {
+                                        <div class="text-success fw-bold small">
+                                            @res.ExpiresAt.Value.ToString("MMM dd, yyyy")
+                                        </div>
+                                        <div class="text-muted smaller" style="font-size: 0.75rem;">3-Day Pickup Window</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Pending Return</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group btn-group-sm">
+                                        <form asp-action="Fulfill" asp-route-id="@res.ReservationId" method="post" class="d-inline" onsubmit="return confirm('Fulfill reservation for @res.Borrower.FullName?');">
+                                            <button type="submit" class="btn btn-outline-success" title="Fulfill Reservation">
+                                                <i class="bi bi-check-lg me-1"></i> Fulfill
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="Cancel" asp-route-id="@res.ReservationId" method="post" class="d-inline" onsubmit="return confirm('Cancel this reservation? Next patrons will advance.');">
+                                            <button type="submit" class="btn btn-outline-danger" title="Cancel Reservation">
+                                                <i class="bi bi-x-lg me-1"></i> Cancel
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

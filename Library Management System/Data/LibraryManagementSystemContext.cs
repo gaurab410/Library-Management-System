@@ -18,6 +18,7 @@ namespace LibraryManagementSystem.Data
         public DbSet<Borrower> Borrowers { get; set; } = default!;
         public DbSet<BorrowTransaction> BorrowTransactions { get; set; } = default!;
         public DbSet<Reservation> Reservations { get; set; } = default!;
+        public DbSet<Notification> Notifications { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,0 +1,85 @@
+@model LibraryManagementSystem.Models.Reservation
+@{
+    ViewData["Title"] = "Place New Reservation";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2"></i>Place Item Reservation (Waitlist)</h4>
+            </div>
+            <div class="card-body p-4">
+                <!-- Informational guideline callout -->
+                <div class="alert alert-info border-0 rounded-3 mb-4 d-flex align-items-start gap-3">
+                    <i class="bi bi-info-circle-fill fs-3 text-info flex-shrink-0"></i>
+                    <div class="small">
+                        <strong>Reservation Rules:</strong>
+                        <ul class="mb-0 ps-3 mt-1">
+                            <li>Reservations can only be placed for items that are currently <strong>On Loan (Borrowed)</strong> or undergoing repair.</li>
+                            <li>Items that are currently <strong>Available</strong> should be borrowed directly at the reception desk.</li>
+                            <li>Patrons will be placed into the waitlist in <strong>FIFO (First-In, First-Out)</strong> order.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                    <!-- 1. Item Selection -->
+                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3">1. Item Selection</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-7">
+                            <label asp-for="LibraryItemId" class="form-label fw-bold">Select Item</label>
+                            <select asp-for="LibraryItemId" class="form-select" asp-items="ViewBag.LibraryItems">
+                                <option value="0">-- Select Catalog Item --</option>
+                            </select>
+                            <span asp-validation-for="LibraryItemId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="directLibraryCode" class="form-label fw-bold">Or Enter Library Code</label>
+                            <input type="text" name="directLibraryCode" id="directLibraryCode" class="form-control text-uppercase" placeholder="e.g. BK-1001" />
+                        </div>
+                    </div>
+
+                    <!-- 2. Borrower Selection -->
+                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3">2. Patron (Borrower) Selection</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-7">
+                            <label asp-for="BorrowerId" class="form-label fw-bold">Select Borrower</label>
+                            <select asp-for="BorrowerId" class="form-select" asp-items="ViewBag.ActiveBorrowers">
+                                <option value="0">-- Select Active Borrower --</option>
+                            </select>
+                            <span asp-validation-for="BorrowerId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="directCardNumber" class="form-label fw-bold">Or Enter Card Number</label>
+                            <input type="text" name="directCardNumber" id="directCardNumber" class="form-control text-uppercase" placeholder="e.g. BW-1001" />
+                        </div>
+                    </div>
+
+                    <!-- 3. Optional Notes -->
+                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3">3. Additional Notes</h6>
+                    <div class="mb-4">
+                        <label asp-for="Notes" class="form-label fw-bold">Reservation Notes (Optional)</label>
+                        <textarea asp-for="Notes" class="form-control" rows="2" placeholder="e.g. Patron prefers email contact when available..."></textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Reservations
+                        </a>
+                        <button type="submit" class="btn btn-primary fw-bold px-4 py-2">
+                            <i class="bi bi-bookmark-plus-fill me-1"></i> Confirm & Place in Queue
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
