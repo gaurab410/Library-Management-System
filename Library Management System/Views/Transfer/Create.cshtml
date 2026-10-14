@@ -1,0 +1,105 @@
+@model LibraryManagementSystem.Models.BranchTransfer
+@{
+    ViewData["Title"] = "Request Item Transfer";
+    var itemsList = ViewBag.ItemsList as List<LibraryManagementSystem.Models.LibraryItem> ?? new List<LibraryManagementSystem.Models.LibraryItem>();
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-arrow-left-right me-2"></i>Request Inter-Branch Transfer</h4>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3">Item Selection</h6>
+
+                    <div class="mb-3">
+                        <label asp-for="LibraryItemId" class="form-label fw-bold">Select Item to Transfer</label> <span class="text-danger">*</span>
+                        <select asp-for="LibraryItemId" class="form-select" id="itemSelect" required>
+                            <option value="">-- Choose an item --</option>
+                            @foreach (var item in itemsList)
+                            {
+                                <option value="@item.Id" 
+                                        data-branch-id="@item.BranchId" 
+                                        data-branch-name="@item.Branch?.Name"
+                                        selected="@(Model.LibraryItemId == item.Id)">
+                                    [@item.LibraryCode] @item.Name (Currently at: @item.Branch?.Name)
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="LibraryItemId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="card bg-light border-0 mb-3 p-3" id="currentBranchCard">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-geo-alt-fill text-danger fs-4 me-3"></i>
+                            <div>
+                                <small class="text-muted text-uppercase fw-bold d-block">Current Item Branch (Origin)</small>
+                                <span class="fw-bold fs-6 text-dark" id="currentBranchName">Select an item above to see current branch</span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" asp-for="FromBranchId" id="fromBranchInput" />
+
+                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3 mt-4">Transfer Destination & Details</h6>
+
+                    <div class="mb-3">
+                        <label asp-for="ToBranchId" class="form-label fw-bold">Destination Branch</label> <span class="text-danger">*</span>
+                        <select asp-for="ToBranchId" class="form-select" asp-items="ViewBag.BranchesList" id="destinationBranchSelect" required>
+                            <option value="">-- Select Destination Branch --</option>
+                        </select>
+                        <span asp-validation-for="ToBranchId" class="text-danger small"></span>
+                        <small class="text-muted">The destination branch where the item will be shipped to.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label fw-bold"></label>
+                        <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Reason for transfer, member reservation details, or handling instructions..."></textarea>
+                        <span asp-validation-for="Notes" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Transfers
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">
+                            <i class="bi bi-send-check me-1"></i> Submit Transfer Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const itemSelect = document.getElementById('itemSelect');
+            const currentBranchName = document.getElementById('currentBranchName');
+
+            function updateOriginDisplay() {
+                const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+                const fromBranchInput = document.getElementById('fromBranchInput');
+                if (selectedOption && selectedOption.dataset.branchName) {
+                    currentBranchName.textContent = selectedOption.dataset.branchName;
+                    if (fromBranchInput && selectedOption.dataset.branchId) {
+                        fromBranchInput.value = selectedOption.dataset.branchId;
+                    }
+                } else {
+                    currentBranchName.textContent = 'Select an item above to see current branch';
+                    if (fromBranchInput) {
+                        fromBranchInput.value = '';
+                    }
+                }
+            }
+
+            itemSelect.addEventListener('change', updateOriginDisplay);
+            updateOriginDisplay();
+        });
+    </script>
+}
