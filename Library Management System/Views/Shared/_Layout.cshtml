@@ -37,6 +37,12 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Import" ? "active fw-bold text-white" : "")" 
+                                   asp-controller="Import" asp-action="Index">
+                                    <i class="bi bi-file-earmark-spreadsheet-fill me-1 text-success"></i> Bulk Import
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Branch" ? "active fw-bold text-white" : "")" 
                                    asp-controller="Branch" asp-action="Index">
                                     <i class="bi bi-geo-alt-fill me-1 text-danger"></i> Branches
