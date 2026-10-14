@@ -19,7 +19,9 @@ namespace LibraryManagementSystem.Controllers
         // GET: Public/Index (Public Search Portal)
         public async Task<IActionResult> Index(string? search, string itemType = "All", string availability = "All")
         {
-            var query = _context.LibraryItems.AsQueryable();
+            var query = _context.LibraryItems
+                .Include(i => i.Branch)
+                .AsQueryable();
 
             // Exclude destroyed items from public view if desired, or show all except Destroy
             query = query.Where(i => i.Status != ItemStatus.Destroy);
