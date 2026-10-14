@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using LibraryManagementSystem.Data;
 using LibraryManagementSystem.Models;
+using LibraryManagementSystem.Services;
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -241,6 +242,23 @@ namespace LibraryManagementSystem.Controllers
                 nextReservation.NotifiedAt = DateTime.Now;
                 nextReservation.ExpiresAt = DateTime.Now.AddDays(3);
                 reservationMsg = $" Item is now on hold for '{nextReservation.Borrower?.FullName}' (Ready for Pickup until {nextReservation.ExpiresAt:MMM dd}).";
+
+                await NotificationService.CreateNotificationAsync(
+                    _context,
+                    nextReservation.BorrowerId,
+                    transaction.LibraryItemId,
+                    $"Your reservation for '{transaction.LibraryItem.Name}' is ready for pickup. You have 3 days until {nextReservation.ExpiresAt:MMM dd, yyyy}.",
+                    NotificationType.ReservationReady);
+            }
+
+            if (fineAmount > 0)
+            {
+                await NotificationService.CreateNotificationAsync(
+                    _context,
+                    transaction.BorrowerId,
+                    transaction.LibraryItemId,
+                    $"Fine of ${fineAmount:F2} issued for returning '{transaction.LibraryItem.Name}' {daysLate} days late.",
+                    NotificationType.FineIssued);
             }
 
             await _context.SaveChangesAsync();
