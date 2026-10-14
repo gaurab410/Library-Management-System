@@ -36,6 +36,12 @@
                                     <i class="bi bi-shield-lock-fill me-1 text-info"></i> Admin Console
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Branch" ? "active fw-bold text-white" : "")" 
+                                   asp-controller="Branch" asp-action="Index">
+                                    <i class="bi bi-geo-alt-fill me-1 text-danger"></i> Branches
+                                </a>
+                            </li>
                         }
 
                         @if (User.IsInRole("Reception"))
@@ -44,6 +50,16 @@
                                 <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reception" ? "active fw-bold text-white" : "")" 
                                    asp-controller="Reception" asp-action="Index">
                                     <i class="bi bi-person-workspace me-1 text-success"></i> Reception Desk
+                                </a>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("Admin") || User.IsInRole("Reception"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Transfer" ? "active fw-bold text-white" : "")" 
+                                   asp-controller="Transfer" asp-action="Index">
+                                    <i class="bi bi-arrow-left-right me-1 text-primary"></i> Transfers
                                 </a>
                             </li>
                         }
