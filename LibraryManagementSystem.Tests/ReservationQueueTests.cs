@@ -81,7 +81,7 @@ namespace LibraryManagementSystem.Tests
         }
 
         [Fact]
-        public async Task CancelReservation_ReNumbersRemainingActiveQueue()
+        public async Task CancelReservation_RenumberSubsequentQueuePositions()
         {
             // Arrange
             var dbName = Guid.NewGuid().ToString();
@@ -131,7 +131,7 @@ namespace LibraryManagementSystem.Tests
         }
 
         [Fact]
-        public async Task CreateReservation_CannotReserveAvailableItem()
+        public async Task CreateReservation_RejectsWhenItemIsAvailable()
         {
             // Arrange
             var dbName = Guid.NewGuid().ToString();
@@ -166,7 +166,7 @@ namespace LibraryManagementSystem.Tests
         }
 
         [Fact]
-        public async Task CreateReservation_DuplicateActiveReservationIsRejected()
+        public async Task CreateReservation_RejectsDuplicateActiveReservationForSameBorrower()
         {
             // Arrange
             var dbName = Guid.NewGuid().ToString();

@@ -35,7 +35,7 @@ namespace LibraryManagementSystem.Tests
         }
 
         [Fact]
-        public async Task ReturningOverdueItem_CreatesFineIssuedNotification()
+        public async Task ReturnItem_WhenOverdue_CreatesFineIssuedNotification()
         {
             // Arrange
             var dbName = Guid.NewGuid().ToString();
@@ -114,7 +114,7 @@ namespace LibraryManagementSystem.Tests
         }
 
         [Fact]
-        public async Task ReturnTriggersReservationReadyNotification_ForNextInQueue()
+        public async Task ReturnItem_WhenPendingReservationsExist_MarksNextReadyAndCreatesNotification()
         {
             // Arrange
             var dbName = Guid.NewGuid().ToString();
@@ -209,7 +209,7 @@ namespace LibraryManagementSystem.Tests
         }
 
         [Fact]
-        public async Task ReturnOnTimeItem_WithNoReservations_DoesNotCreateNotifications()
+        public async Task ReturnItem_WhenNoReservations_DoesNotCreateReservationNotification()
         {
             // Arrange
             var dbName = Guid.NewGuid().ToString();

@@ -158,7 +158,7 @@ namespace LibraryManagementSystem.Tests
         }
 
         [Fact]
-        public async Task OverdueFine_CalculatedCorrectly_AtOneDollarFiftyPerDay()
+        public async Task ReturnItem_WhenOverdue_CalculatesFineAccurately()
         {
             // Arrange
             var dbName = Guid.NewGuid().ToString();
