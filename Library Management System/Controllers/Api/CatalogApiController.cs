@@ -48,9 +48,9 @@ namespace LibraryManagementSystem.Controllers.Api
             {
                 query = type.Trim().ToLower() switch
                 {
-                    "book" => query.OfType<BookItem>(),
-                    "music" => query.OfType<MusicItem>(),
-                    "toy" => query.OfType<ToyItem>(),
+                    "book" => query.Where(i => i is BookItem),
+                    "music" => query.Where(i => i is MusicItem),
+                    "toy" => query.Where(i => i is ToyItem),
                     _ => query
                 };
             }

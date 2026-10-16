@@ -44,9 +44,9 @@ namespace LibraryManagementSystem.Controllers
             {
                 query = typeFilter switch
                 {
-                    "Book" => query.OfType<BookItem>(),
-                    "Music" => query.OfType<MusicItem>(),
-                    "Toy" => query.OfType<ToyItem>(),
+                    "Book" => query.Where(i => i is BookItem),
+                    "Music" => query.Where(i => i is MusicItem),
+                    "Toy" => query.Where(i => i is ToyItem),
                     _ => query
                 };
             }
